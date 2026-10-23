@@ -1,0 +1,324 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -------------------------------------------------------------------------- */
+/* Design tokens                                                              */
+/* -------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f5f5f1;
+  --surface: #ffffff;
+  --surface-muted: #ecece6;
+  --line: #e0e0d8;
+  --line-strong: #c9c9bf;
+  --fg: #111214;
+  --fg-muted: #4a4c52;
+  --fg-subtle: #686a70;
+  /* Lime is the brand colour; in light mode text uses a darker olive so it stays readable. */
+  --accent: #4a7a08;
+  --accent-hover: #3c6405;
+  --accent-fill: #c6f36b;
+  --accent-fill-hover: #b8ea52;
+  --accent-fill-fg: #0b0c0e;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(74 122 8 / 0.08);
+  --accent-line: rgb(74 122 8 / 0.3);
+  --tone-neutral: #8a8a95;
+  --tone-amber: #9a5b00; /* also error text: keep ≥ 4.5:1 on light surfaces */
+  --tone-violet: #6d3fd6;
+  --tone-emerald: #13824f;
+  --tone-blue: #2f5bd0;
+  --shadow-card: 0 1px 2px rgb(16 16 24 / 0.04), 0 12px 32px -18px rgb(16 16 24 / 0.18);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0b0c0e;
+  --surface: #131417;
+  --surface-muted: #1a1b1f;
+  --line: #232529;
+  --line-strong: #33363c;
+  --fg: #f1f1ec;
+  --fg-muted: #a6a8ad;
+  --fg-subtle: #83868c;
+  --accent: #c6f36b;
+  --accent-hover: #d4f78c;
+  --accent-fill: #c6f36b;
+  --accent-fill-hover: #d4f78c;
+  --accent-fill-fg: #0b0c0e;
+  --accent-fg: #0b0c0e;
+  --accent-soft: rgb(198 243 107 / 0.07);
+  --accent-line: rgb(198 243 107 / 0.3);
+  --tone-neutral: #8b8b96;
+  --tone-amber: #f2b441;
+  --tone-violet: #a78bfa;
+  --tone-emerald: #5fd99a;
+  --tone-blue: #7d95ff;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 16px 40px -24px rgb(0 0 0 / 0.8);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fill-hover: var(--accent-fill-hover);
+  --color-accent-fill-fg: var(--accent-fill-fg);
+  --color-tone-neutral: var(--tone-neutral);
+  --color-tone-amber: var(--tone-amber);
+  --color-tone-violet: var(--tone-violet);
+  --color-tone-emerald: var(--tone-emerald);
+  --color-tone-blue: var(--tone-blue);
+  --shadow-card: var(--shadow-card);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Base                                                                       */
+/* -------------------------------------------------------------------------- */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background-color: var(--accent-fill);
+    color: var(--accent-fill-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Utilities                                                                  */
+/* -------------------------------------------------------------------------- */
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@utility bg-dots {
+  background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+@utility text-pretty {
+  text-wrap: pretty;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Motion                                                                     */
+/* -------------------------------------------------------------------------- */
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Page-load entrance; stagger with style={{ "--delay": "120ms" }}. */
+.animate-enter {
+  animation: enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.animate-ping-soft {
+  animation: ping-soft 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Scroll reveal (components/ui/reveal.tsx). Content is only hidden once the root
+   layout's script has confirmed JavaScript runs and the visitor allows motion. */
+.motion-ok [data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(12px);
+}
+[data-reveal] {
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Article typography (Writing pages)                                         */
+/* -------------------------------------------------------------------------- */
+
+.prose-article {
+  color: var(--fg-muted);
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+.prose-article > * + * {
+  margin-top: 1.25em;
+}
+.prose-article h2 {
+  margin-top: 2.25em;
+  color: var(--fg);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.prose-article h3 {
+  margin-top: 1.75em;
+  color: var(--fg);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.prose-article a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--accent-line);
+}
+.prose-article a:hover {
+  text-decoration-color: currentColor;
+}
+.prose-article strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+.prose-article ul,
+.prose-article ol {
+  padding-left: 1.4em;
+}
+.prose-article ul {
+  list-style: disc;
+}
+.prose-article ol {
+  list-style: decimal;
+}
+.prose-article li + li {
+  margin-top: 0.4em;
+}
+.prose-article li::marker {
+  color: var(--fg-subtle);
+}
+.prose-article blockquote {
+  border-left: 2px solid var(--accent-line);
+  padding-left: 1em;
+  color: var(--fg-subtle);
+}
+.prose-article code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+}
+.prose-article pre {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+.prose-article pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.prose-article img {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.prose-article hr {
+  border-color: var(--line);
+}
+.prose-article table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+  display: block;
+  overflow-x: auto;
+}
+.prose-article th,
+.prose-article td {
+  border-bottom: 1px solid var(--line);
+  padding: 0.6em 0.8em;
+  text-align: left;
+}
+.prose-article th {
+  color: var(--fg);
+  font-weight: 600;
+}
