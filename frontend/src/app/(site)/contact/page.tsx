@@ -49,7 +49,7 @@ export default async function ContactPage() {
           </Reveal>
 
           {email && (
-            <Reveal delay={80} className="lg:col-span-7">
+            <Reveal delay={80} className="card rounded-2xl p-6 sm:p-8 lg:col-span-7">
               <h2 className="font-mono text-xs tracking-[0.1em] text-fg-subtle uppercase">Send a message</h2>
               <div className="mt-6">
                 <ContactForm email={email} />

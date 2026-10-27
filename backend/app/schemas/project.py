@@ -274,6 +274,8 @@ class ProjectPublicSummary(ReadSchema):
     cover_image: ProjectImage | None
     start_date: str | None
     end_date: str | None
+    # The first few measured results, shown as chips on project cards.
+    highlights: list[ProjectMetric] = []
 
 
 class ProjectPublicDetail(ProjectPublicSummary):

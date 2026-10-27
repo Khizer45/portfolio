@@ -27,7 +27,7 @@ export const revalidate = 300;
 
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as React.CSSProperties;
 
-const tileClasses = "rounded-2xl border border-line bg-surface p-5";
+const tileClasses = "card rounded-2xl p-5";
 const tileLabelClasses = "flex items-center gap-1.5 font-mono text-[0.6875rem] tracking-[0.1em] text-fg-subtle uppercase";
 
 export default async function HomePage() {
@@ -72,15 +72,11 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section aria-labelledby="hero-heading" className="relative overflow-hidden border-b border-line">
-        <div
-          aria-hidden="true"
-          className="bg-dots pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_60%_55%_at_20%_10%,black,transparent)]"
-        />
         <Container className="relative grid grid-cols-1 gap-10 pt-10 pb-14 sm:gap-12 sm:pt-20 sm:pb-24 lg:grid-cols-12 lg:gap-10 lg:pt-24">
           <div className="lg:col-span-7">
             {profile.profile_image_url && (
               // Not faded in: it is above the fold. Set in Admin → Profile, so next/image is not used.
-              <div className="mb-8 flex w-fit rounded-full bg-linear-to-b from-accent/70 via-accent-line to-transparent p-[3px] sm:mt-10">
+              <div className="card mb-8 flex w-fit rounded-full p-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={profile.profile_image_url}
@@ -148,10 +144,7 @@ export default async function HomePage() {
 
           <aside aria-label="Availability" className="grid grid-cols-1 gap-3 lg:col-span-5 lg:self-center">
             {/* Open-to-work card: everything in it is set in Admin → Profile → Availability. */}
-            <div
-              className="animate-enter relative overflow-hidden rounded-2xl border border-line bg-surface p-6 sm:p-7"
-              style={delay(160)}
-            >
+            <div className="animate-enter relative overflow-hidden card rounded-2xl p-6 sm:p-7" style={delay(160)}>
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 bg-linear-to-br from-accent-soft via-transparent to-transparent"
@@ -160,8 +153,8 @@ export default async function HomePage() {
                 {profile.availability_open && profile.availability_label && (
                   <p className="inline-flex items-center gap-2 rounded-full border border-accent-line bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
                     <span aria-hidden="true" className="relative flex size-2">
-                      <span className="animate-ping-soft absolute inset-0 rounded-full bg-accent-fill" />
-                      <span className="relative size-2 rounded-full bg-accent-fill" />
+                      <span className="animate-ping-soft absolute inset-0 rounded-full bg-accent" />
+                      <span className="relative size-2 rounded-full bg-accent" />
                     </span>
                     {profile.availability_label}
                   </p>
@@ -261,7 +254,7 @@ export default async function HomePage() {
           <Reveal>
             <SectionHeading
               id="projects-heading"
-              eyebrow="01 — Work"
+              eyebrow="01 / Work"
               title="Selected projects"
               description="End-to-end work across computer vision, model benchmarking, and LLM applications. Each project shows its real status."
               action={<ArrowLink href="/projects">View all projects</ArrowLink>}
@@ -288,27 +281,29 @@ export default async function HomePage() {
             <Reveal>
               <SectionHeading
                 id="skills-heading"
-                eyebrow="02 — Stack"
+                eyebrow="02 / Stack"
                 title="Skills & tools"
                 description="The languages, frameworks, and tools I use most. The full list, grouped by area, is on the skills page."
                 action={<ArrowLink href="/skills">View all skills</ArrowLink>}
               />
             </Reveal>
-            <ul className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
-              {skillGroups.map((group, index) => (
-                <Reveal as="li" key={group.slug} delay={(index % 3) * 50} className="bg-surface p-6">
-                  <h3 className="font-mono text-xs tracking-[0.1em] text-fg-subtle uppercase">{group.title}</h3>
-                  <ul className="mt-4 space-y-2">
-                    {group.skills.map((skill) => (
-                      <li key={skill.name} className="flex items-center gap-2.5 text-[0.9375rem] text-fg">
-                        <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-accent" />
-                        {skill.name}
-                      </li>
-                    ))}
-                  </ul>
-                </Reveal>
-              ))}
-            </ul>
+            <div className="card overflow-hidden rounded-2xl">
+              <ul className="grid grid-cols-1 gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
+                {skillGroups.map((group, index) => (
+                  <Reveal as="li" key={group.slug} delay={(index % 3) * 50} className="bg-surface p-6">
+                    <h3 className="font-mono text-xs tracking-[0.1em] text-fg-subtle uppercase">{group.title}</h3>
+                    <ul className="mt-4 space-y-2">
+                      {group.skills.map((skill) => (
+                        <li key={skill.name} className="flex items-center gap-2.5 text-[0.9375rem] text-fg">
+                          <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-accent" />
+                          {skill.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </Reveal>
+                ))}
+              </ul>
+            </div>
           </Container>
         </section>
       )}
@@ -319,16 +314,16 @@ export default async function HomePage() {
           <Reveal>
             <SectionHeading
               id="experience-heading"
-              eyebrow="03 — Experience"
+              eyebrow="03 / Experience"
               title="Where I've worked"
               action={<ArrowLink href="/experience">Full timeline</ArrowLink>}
             />
           </Reveal>
           <Reveal>
             {experience.length > 0 ? (
-              <ul className="divide-y divide-line border-y border-line">
+              <ul className="card divide-y divide-line overflow-hidden rounded-2xl">
                 {experience.map((item) => (
-                  <li key={item.id} className="grid gap-1 py-6 sm:grid-cols-[12rem_1fr] sm:gap-8">
+                  <li key={item.id} className="grid gap-1 px-5 py-6 sm:grid-cols-[12rem_1fr] sm:gap-8 sm:px-7">
                     <p className="font-mono text-xs text-fg-subtle sm:pt-1.5">
                       {formatRange(item.start_date, item.end_date ?? undefined)}
                     </p>
@@ -347,7 +342,9 @@ export default async function HomePage() {
                 ))}
               </ul>
             ) : (
-              <p className="border-y border-line py-5 text-sm text-fg-muted">Professional experience will be added here.</p>
+              <p className="card rounded-2xl px-5 py-5 text-sm text-fg-muted">
+                Professional experience will be added here.
+              </p>
             )}
           </Reveal>
         </Container>
@@ -360,7 +357,7 @@ export default async function HomePage() {
             <Reveal>
               <SectionHeading
                 id="certifications-heading"
-                eyebrow="04 — Credentials"
+                eyebrow="04 / Credentials"
                 title="Latest certifications"
                 action={<ArrowLink href="/certifications">View all certifications</ArrowLink>}
               />
@@ -371,7 +368,7 @@ export default async function HomePage() {
                   as="li"
                   key={cert.id}
                   delay={index * 60}
-                  className="flex items-start gap-4 rounded-2xl border border-line bg-surface p-5 transition-colors hover:border-line-strong"
+                  className="card card-hover flex items-start gap-4 rounded-2xl p-5"
                 >
                   <BadgeCheck className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden="true" strokeWidth={1.75} />
                   <div className="min-w-0">

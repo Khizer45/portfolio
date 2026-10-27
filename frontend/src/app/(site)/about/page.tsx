@@ -76,7 +76,7 @@ export default async function AboutPage() {
           </div>
 
           <aside className="order-first lg:sticky lg:top-24 lg:order-none lg:self-start" aria-label="Profile summary">
-            <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+            <div className="card rounded-2xl p-5 sm:p-6">
               <div className="flex items-center gap-4 lg:block">
                 {profile.profile_image_url ? (
                   // The image URL is set in the admin dashboard and may be on any host, so next/image is not used.

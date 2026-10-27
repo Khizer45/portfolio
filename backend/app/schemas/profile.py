@@ -1,11 +1,12 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import EmailStr, Field, field_validator
 
 from app.schemas.common import (
     HttpUrlStr,
     LinkOrPath,
+    OptionalHexColor,
     OptionalHttpUrl,
     OptionalLinkOrPath,
     ReadSchema,
@@ -15,6 +16,9 @@ from app.schemas.common import (
     optional_text,
     text,
 )
+
+# Colour themes the frontend knows (frontend/src/lib/theme.ts).
+ThemePreset = Literal["blueprint", "lime", "ocean", "graphite"]
 
 
 class SocialLink(Schema):
@@ -59,6 +63,13 @@ class ProfileWrite(Schema):
     work_preference: optional_text(120) = None
     timezone: optional_text(60) = None
     currently_building: Annotated[list[BuildingItem], Field(max_length=6)] = []
+    theme_preset: ThemePreset = "blueprint"
+    theme_mode: Literal["light", "dark"] = "light"
+    theme_accent: OptionalHexColor = None
+    theme_button: OptionalHexColor = None
+    theme_pattern: Literal["grid", "dots", "none"] = "grid"
+    theme_cards: Literal["offset", "soft", "flat"] = "offset"
+    theme_corners: Literal["sharp", "rounded"] = "rounded"
     focus_areas: TagList = []
     spoken_languages: TagList = []
     career_interests: TagList = []
@@ -94,6 +105,13 @@ class ProfileRead(ReadSchema):
     work_preference: str
     timezone: str
     currently_building: list[BuildingItem]
+    theme_preset: str
+    theme_mode: str
+    theme_accent: str | None
+    theme_button: str | None
+    theme_pattern: str
+    theme_cards: str
+    theme_corners: str
     focus_areas: list[str]
     spoken_languages: list[str]
     career_interests: list[str]

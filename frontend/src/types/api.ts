@@ -87,6 +87,14 @@ export interface Profile {
   timezone: string;
   /** When empty, the home page lists in-progress projects instead. */
   currently_building: BuildingItem[];
+  /** Appearance (Admin → Profile → Appearance); see lib/theme.ts. Colours are null when unset. */
+  theme_preset: string;
+  theme_mode: string;
+  theme_accent: string | null;
+  theme_button: string | null;
+  theme_pattern: string;
+  theme_cards: string;
+  theme_corners: string;
   focus_areas: string[];
   spoken_languages: string[];
   career_interests: string[];
@@ -149,6 +157,8 @@ export interface ProjectSummary {
   cover_image: ProjectImage | null;
   start_date: string | null;
   end_date: string | null;
+  /** Up to three measured results, shown as chips on project cards. */
+  highlights?: ProjectMetric[];
 }
 
 export interface RelatedArticle {

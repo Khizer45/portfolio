@@ -14,8 +14,6 @@ export const site = {
   title: "Khizer Hayat — Software Engineer (AI/ML)",
   description:
     "Khizer Hayat — Software Engineer focused on AI/ML and MLOps. Projects in computer vision, LLM applications, and Python backend services with FastAPI.",
-  /** Theme used on a first visit, before a visitor picks one. */
-  defaultTheme: "dark" as "dark" | "light",
   /**
    * Show categories that have no projects yet (as "Projects coming soon") in
    * the category directory. Set to false to only list active categories.

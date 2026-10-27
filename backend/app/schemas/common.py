@@ -87,6 +87,11 @@ LinkOrPath = Annotated[str, AfterValidator(_check_link_or_path)]
 OptionalLinkOrPath = Annotated[LinkOrPath | None, BeforeValidator(_blank_to_none)]
 
 
+# "#1f2a55"-style colour, stored lowercase. Optional: "" means "use the theme's colour".
+HexColor = Annotated[str, StringConstraints(strip_whitespace=True, to_lower=True, pattern=r"^#[0-9a-fA-F]{6}$")]
+OptionalHexColor = Annotated[HexColor | None, BeforeValidator(_blank_to_none)]
+
+
 def optional_slug(max_length: int = 100):
     """Optional URL slug; `max_length` must not exceed the slug column's length."""
     slug = Annotated[

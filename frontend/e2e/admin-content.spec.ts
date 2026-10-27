@@ -226,7 +226,15 @@ test.describe("certifications", () => {
 });
 
 test.describe("profile", () => {
-  type Profile = Record<string, unknown> & { availability_label: string; availability_open: boolean; profile_image_url: string | null };
+  type Profile = Record<string, unknown> & {
+    availability_label: string;
+    availability_open: boolean;
+    profile_image_url: string | null;
+    theme_preset: string;
+    theme_cards: string;
+    theme_pattern: string;
+    theme_accent: string | null;
+  };
   const withoutTimestamp = (profile: Profile) => {
     const copy: Record<string, unknown> = { ...profile };
     delete copy.updated_at;
@@ -326,6 +334,54 @@ test.describe("profile", () => {
       await expect(publicPage.getByText(title)).toHaveCount(0, { timeout: 1_000 });
     });
     expect(withoutTimestamp(await adminApi.get<Profile>("/admin/profile"))).toEqual(withoutTimestamp(original!));
+  });
+
+  test("change the site theme in Appearance, see it on the site, then restore it", async ({ page, context, adminApi }) => {
+    original = await adminApi.get<Profile>("/admin/profile");
+    const saved = original;
+    const publicPage = await context.newPage();
+    const html = publicPage.locator("html");
+
+    await page.goto("/admin/profile");
+    await page.getByRole("combobox", { name: "Theme", exact: true }).selectOption("ocean");
+    await page.getByRole("combobox", { name: "Card style" }).selectOption("soft");
+    await page.getByRole("combobox", { name: "Background pattern" }).selectOption("dots");
+    const accent = page.getByRole("textbox", { name: "Accent colour", exact: true });
+    await accent.fill("red");
+    await page.getByRole("button", { name: "Save profile" }).click();
+    // Shown in the error summary and under the field.
+    await expect(accent).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator("#field-theme_accent-error")).toHaveText("Use a 6-digit hex colour, e.g. #1f2a55.");
+    await accent.fill("#c2381d");
+    let revalidation = waitForRevalidation(page);
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(toast(page, "Profile saved.")).toBeVisible();
+    expect((await revalidation).status()).toBe(200);
+
+    await eventually(async () => {
+      await publicPage.goto("/");
+      await expect(html).toHaveAttribute("data-preset", "ocean", { timeout: 1_000 });
+      await expect(html).toHaveAttribute("data-cards", "soft");
+      await expect(html).toHaveAttribute("data-pattern", "dots");
+    });
+    // The custom accent is used (darkened as needed to stay readable on the light background).
+    const accentValue = await publicPage.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(),
+    );
+    expect(accentValue).toMatch(/^#[0-9a-f]{6}$/);
+    expect(accentValue).not.toBe("#0a6f6a");
+
+    // Restore everything through the form.
+    await page.getByRole("combobox", { name: "Theme", exact: true }).selectOption(saved.theme_preset);
+    await page.getByRole("combobox", { name: "Card style" }).selectOption(saved.theme_cards);
+    await page.getByRole("combobox", { name: "Background pattern" }).selectOption(saved.theme_pattern);
+    if (saved.theme_accent) await accent.fill(saved.theme_accent);
+    else await page.getByRole("button", { name: "Clear Accent colour" }).click();
+    revalidation = waitForRevalidation(page);
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(toast(page, "Profile saved.")).toBeVisible();
+    expect((await revalidation).status()).toBe(200);
+    expect(withoutTimestamp(await adminApi.get<Profile>("/admin/profile"))).toEqual(withoutTimestamp(saved));
   });
 
   test("upload a profile photo, see it on /about, then remove it", async ({ page, context, adminApi }) => {

@@ -2,7 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { ImagePlaceholder, ProjectImageView } from "@/components/projects/project-cover";
-import { StatusBadge, Tag } from "@/components/ui/badge";
+import { MetricChip, StatusBadge, Tag } from "@/components/ui/badge";
 import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/format";
 import { projectStatusMeta } from "@/lib/labels";
@@ -13,10 +13,13 @@ const MAX_TAGS = 5;
 export function ProjectCard({
   project,
   headingLevel = "h3",
+  index,
   className,
 }: {
   project: ProjectSummary;
   headingLevel?: "h2" | "h3";
+  /** Position in the list, shown as "P-01". */
+  index?: number;
   className?: string;
 }) {
   const Heading = headingLevel;
@@ -27,11 +30,16 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "group relative flex min-w-0 flex-col rounded-2xl border border-line bg-surface p-3 transition-[border-color,transform,background-color] duration-200 hover:-translate-y-0.5 hover:border-line-strong has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-accent",
+        "card card-hover group relative flex min-w-0 flex-col rounded-2xl p-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-accent",
         className,
       )}
     >
-      <div className="aspect-[2/1] overflow-hidden rounded-xl border border-line">
+      <div className="relative aspect-[2/1] overflow-hidden rounded-xl border border-line">
+        {index !== undefined && (
+          <span className="absolute top-2.5 left-2.5 z-10 rounded-md border border-[var(--btn-border-secondary)] bg-surface px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold text-fg">
+            P-{String(index + 1).padStart(2, "0")}
+          </span>
+        )}
         {cover ? (
           <ProjectImageView image={cover} className="transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : (
@@ -50,6 +58,15 @@ export function ProjectCard({
         </Heading>
         {project.subtitle && <p className="mt-0.5 text-sm text-fg-subtle">{project.subtitle}</p>}
         <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-fg-muted">{project.summary}</p>
+        {project.highlights && project.highlights.length > 0 && (
+          <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Results">
+            {project.highlights.map((metric) => (
+              <li key={metric.label}>
+                <MetricChip value={metric.value} label={metric.label} />
+              </li>
+            ))}
+          </ul>
+        )}
         <ul className="mt-5 flex flex-wrap gap-1.5" aria-label="Technologies">
           {project.technologies.slice(0, MAX_TAGS).map((tech) => (
             <li key={tech}>
@@ -82,7 +99,7 @@ export function ProjectGrid({ projects, headingLevel }: { projects: ProjectSumma
     <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       {projects.map((project, index) => (
         <Reveal as="li" key={project.slug} delay={(index % 2) * 90} className="flex">
-          <ProjectCard project={project} headingLevel={headingLevel} className="w-full" />
+          <ProjectCard project={project} headingLevel={headingLevel} index={index} className="w-full" />
         </Reveal>
       ))}
     </ul>

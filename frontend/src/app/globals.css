@@ -7,56 +7,76 @@
 /* -------------------------------------------------------------------------- */
 
 :root {
-  --bg: #f5f5f1;
-  --surface: #ffffff;
-  --surface-muted: #ecece6;
-  --line: #e0e0d8;
-  --line-strong: #c9c9bf;
-  --fg: #111214;
-  --fg-muted: #4a4c52;
-  --fg-subtle: #686a70;
-  /* Lime is the brand colour; in light mode text uses a darker olive so it stays readable. */
-  --accent: #4a7a08;
-  --accent-hover: #3c6405;
-  --accent-fill: #c6f36b;
-  --accent-fill-hover: #b8ea52;
-  --accent-fill-fg: #0b0c0e;
-  --accent-fg: #ffffff;
-  --accent-soft: rgb(74 122 8 / 0.08);
-  --accent-line: rgb(74 122 8 / 0.3);
+  /* Palette colours (--bg, --surface, --fg, --accent, --ink, --footer-*, …) come from the theme in
+     lib/theme.ts: the root layout inlines them, so the admin's Appearance settings apply everywhere. */
   --tone-neutral: #8a8a95;
   --tone-amber: #9a5b00; /* also error text: keep ≥ 4.5:1 on light surfaces */
   --tone-violet: #6d3fd6;
   --tone-emerald: #13824f;
   --tone-blue: #2f5bd0;
   --shadow-card: 0 1px 2px rgb(16 16 24 / 0.04), 0 12px 32px -18px rgb(16 16 24 / 0.18);
+  --shadow-card-hover: 0 1px 2px rgb(16 16 24 / 0.05), 0 18px 40px -18px rgb(16 16 24 / 0.26);
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0b0c0e;
-  --surface: #131417;
-  --surface-muted: #1a1b1f;
-  --line: #232529;
-  --line-strong: #33363c;
-  --fg: #f1f1ec;
-  --fg-muted: #a6a8ad;
-  --fg-subtle: #83868c;
-  --accent: #c6f36b;
-  --accent-hover: #d4f78c;
-  --accent-fill: #c6f36b;
-  --accent-fill-hover: #d4f78c;
-  --accent-fill-fg: #0b0c0e;
-  --accent-fg: #0b0c0e;
-  --accent-soft: rgb(198 243 107 / 0.07);
-  --accent-line: rgb(198 243 107 / 0.3);
   --tone-neutral: #8b8b96;
   --tone-amber: #f2b441;
   --tone-violet: #a78bfa;
   --tone-emerald: #5fd99a;
   --tone-blue: #7d95ff;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 16px 40px -24px rgb(0 0 0 / 0.8);
+  --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 0.4), 0 20px 44px -22px rgb(0 0 0 / 0.9);
   color-scheme: dark;
+}
+
+/* Card and button style (Appearance → Card style). "offset" draws ink borders with a hard
+   shadow that grows on hover; "soft" uses light borders and a blurred shadow; "flat" has neither. */
+:root,
+html[data-cards="soft"] {
+  --card-border: var(--line);
+  --card-border-width: 1px;
+  --card-shadow: var(--shadow-card);
+  --card-shadow-hover: var(--shadow-card-hover);
+  --lift: -2px;
+  --btn-border: transparent;
+  --btn-border-secondary: var(--line-strong);
+  --btn-shadow: none;
+  --btn-shadow-hover: none;
+  --btn-lift: 0px;
+}
+html[data-cards="offset"] {
+  --card-border: var(--ink);
+  --card-border-width: 1.5px;
+  --card-shadow: 4px 4px 0 0 var(--ink);
+  --card-shadow-hover: 6px 6px 0 0 var(--ink);
+  --lift: -2px;
+  --btn-border: var(--ink);
+  --btn-border-secondary: var(--ink);
+  --btn-shadow: 3px 3px 0 0 var(--ink);
+  --btn-shadow-hover: 4px 4px 0 0 var(--ink);
+  --btn-lift: -1px;
+}
+html[data-cards="flat"] {
+  --card-border: var(--line);
+  --card-border-width: 1px;
+  --card-shadow: none;
+  --card-shadow-hover: none;
+  --lift: 0px;
+  --btn-border: transparent;
+  --btn-border-secondary: var(--line-strong);
+  --btn-shadow: none;
+  --btn-shadow-hover: none;
+  --btn-lift: 0px;
+}
+
+/* Corners (Appearance → Corners): Tailwind's rounded-* utilities read these. */
+html[data-corners="sharp"] {
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 5px;
+  --radius-2xl: 6px;
 }
 
 @theme inline {
@@ -81,6 +101,11 @@
   --color-tone-violet: var(--tone-violet);
   --color-tone-emerald: var(--tone-emerald);
   --color-tone-blue: var(--tone-blue);
+  --color-ink: var(--ink);
+  --color-footer: var(--footer-bg);
+  --color-footer-fg: var(--footer-fg);
+  --color-footer-muted: var(--footer-muted);
+  --color-footer-line: var(--footer-line);
   --shadow-card: var(--shadow-card);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -104,11 +129,27 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Page background (Appearance → Background pattern). */
+  html[data-pattern="grid"] body {
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  html[data-pattern="dots"] body {
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+  }
+
+  .site-footer :focus-visible {
+    outline-color: var(--footer-fg);
   }
 
   ::selection {
@@ -143,6 +184,43 @@
 @utility bg-dots {
   background-image: radial-gradient(var(--line-strong) 1px, transparent 1px);
   background-size: 16px 16px;
+}
+
+/* A content box: surface background with the theme's border and shadow. Pair with rounded-*. */
+@utility card {
+  background-color: var(--surface);
+  border: var(--card-border-width) solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+/* Lifts a card on hover (the offset shadow grows as it moves). */
+@utility card-hover {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+  &:hover {
+    transform: translate(var(--lift), var(--lift));
+    box-shadow: var(--card-shadow-hover);
+  }
+}
+
+/* Buttons: offset shadow in the "offset" card style, pressed in on click. */
+@utility btn-press {
+  box-shadow: var(--btn-shadow);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+  &:hover {
+    transform: translate(var(--btn-lift), var(--btn-lift));
+    box-shadow: var(--btn-shadow-hover);
+  }
+  &:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+  }
 }
 
 @utility text-balance {

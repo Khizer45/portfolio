@@ -11,7 +11,7 @@ export function EducationList({ items }: { items: Education[] }) {
           key={item.id}
           className={
             item.is_primary
-              ? "rounded-2xl border border-line bg-surface p-5 sm:p-6"
+              ? "card rounded-2xl p-5 sm:p-6"
               : "rounded-xl border border-line px-5 py-4 sm:px-6"
           }
         >

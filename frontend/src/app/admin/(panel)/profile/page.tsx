@@ -13,6 +13,7 @@ import { useToast } from "@/features/admin/toast";
 import { useApiData } from "@/features/admin/use-api";
 import { AdminPageHeader, Card, ErrorState, Skeleton } from "@/features/admin/ui";
 import { initials } from "@/lib/format";
+import { PRESETS } from "@/lib/theme";
 import type { Profile } from "@/types/api";
 
 const SECTIONS: FormSection[] = [
@@ -67,6 +68,81 @@ const SECTIONS: FormSection[] = [
         ],
       },
       { name: "footer_text", label: "Footer text", type: "textarea", rows: 2, maxLength: 300, wide: true, help: "Shown under your name in the footer. Leave empty to show your role line." },
+    ],
+  },
+  {
+    title: "Appearance",
+    description: "Colours and style for the whole site. Changes go live when you save.",
+    fields: [
+      {
+        name: "theme_preset",
+        label: "Theme",
+        type: "select",
+        required: true,
+        defaultValue: "blueprint",
+        options: Object.entries(PRESETS).map(([value, preset]) => ({ value, label: preset.label })),
+      },
+      {
+        name: "theme_mode",
+        label: "Default colour mode",
+        type: "select",
+        required: true,
+        defaultValue: "light",
+        options: [
+          { value: "light", label: "Light" },
+          { value: "dark", label: "Dark" },
+        ],
+        help: "For first-time visitors. Anyone can still switch with the sun/moon button.",
+      },
+      {
+        name: "theme_accent",
+        label: "Accent colour",
+        type: "color",
+        placeholder: "Theme default",
+        help: "Optional. Used for labels, links and highlights. Too light or dark a colour is adjusted so text stays readable.",
+      },
+      {
+        name: "theme_button",
+        label: "Button colour",
+        type: "color",
+        placeholder: "Theme default",
+        help: "Optional. Used for main buttons and the logo tile; the button text turns black or white to match.",
+      },
+      {
+        name: "theme_pattern",
+        label: "Background pattern",
+        type: "select",
+        required: true,
+        defaultValue: "grid",
+        options: [
+          { value: "grid", label: "Grid paper" },
+          { value: "dots", label: "Dots" },
+          { value: "none", label: "Plain" },
+        ],
+      },
+      {
+        name: "theme_cards",
+        label: "Card style",
+        type: "select",
+        required: true,
+        defaultValue: "offset",
+        options: [
+          { value: "offset", label: "Outlined, with offset shadow" },
+          { value: "soft", label: "Soft shadow" },
+          { value: "flat", label: "Flat" },
+        ],
+      },
+      {
+        name: "theme_corners",
+        label: "Corners",
+        type: "select",
+        required: true,
+        defaultValue: "rounded",
+        options: [
+          { value: "rounded", label: "Rounded" },
+          { value: "sharp", label: "Sharp" },
+        ],
+      },
     ],
   },
   {

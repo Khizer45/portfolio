@@ -19,7 +19,7 @@ export function StatusBadge({ label, tone, className, title }: { label: string; 
     <span
       title={title}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-muted/60 px-2.5 py-0.5 font-mono text-[0.6875rem] font-medium tracking-wide text-fg-muted uppercase",
+        "inline-flex items-center gap-1.5 rounded-md border border-line-strong bg-surface px-2 py-0.5 font-mono text-[0.6875rem] font-medium tracking-wide text-fg-muted uppercase",
         className,
       )}
     >
@@ -34,7 +34,7 @@ export function Tag({ children, className }: { children: React.ReactNode; classN
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-line px-2.5 py-0.5 text-[0.75rem] leading-5 font-medium text-fg-muted",
+        "inline-flex items-center rounded-md border border-line-strong bg-surface/70 px-2 py-0.5 font-mono text-[0.6875rem] leading-5 text-fg-muted",
         className,
       )}
     >
@@ -43,9 +43,27 @@ export function Tag({ children, className }: { children: React.ReactNode; classN
   );
 }
 
-/** Small uppercase label above headings. */
+/** Small uppercase label above headings, led by a short accent rule. */
 export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <p className={cn("font-mono text-xs font-medium tracking-[0.12em] text-accent uppercase", className)}>{children}</p>
+    <p className={cn("flex items-center gap-2.5 font-mono text-xs font-medium tracking-[0.12em] text-accent uppercase", className)}>
+      <span aria-hidden="true" className="h-0.5 w-5 shrink-0 bg-accent" />
+      {children}
+    </p>
+  );
+}
+
+/** A measured result as a compact chip, e.g. "94% · cancellations caught". */
+export function MetricChip({ value, label, className }: { value: string; label: string; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-baseline gap-1.5 rounded-md border border-accent-line bg-accent-soft px-2 py-0.5 text-[0.75rem] leading-5 text-fg-muted",
+        className,
+      )}
+    >
+      <span className="font-mono font-semibold text-accent">{value}</span>
+      {label}
+    </span>
   );
 }

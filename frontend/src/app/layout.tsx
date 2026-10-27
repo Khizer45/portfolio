@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import { site } from "@/data/site";
+import { getProfile } from "@/lib/content";
 import { getSiteUrl } from "@/lib/site-url";
+import { themeColors, themeCss, themeFromProfile } from "@/lib/theme";
 
 import "./globals.css";
 
@@ -51,26 +53,43 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f1" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0c0e" },
-  ],
-};
+async function getTheme() {
+  return themeFromProfile(await getProfile());
+}
 
-// Runs before the first paint so the saved theme never flashes. It also enables scroll
-// reveals only when JavaScript runs and the visitor hasn't asked for reduced motion.
-const themeScript = `(function(){try{var s=localStorage.getItem("theme");var t=s==="light"||s==="dark"?s:"${site.defaultTheme}";document.documentElement.classList.toggle("dark",t==="dark");if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("motion-ok")}catch(e){}})();`;
+export async function generateViewport(): Promise<Viewport> {
+  const colors = themeColors(await getTheme());
+  return {
+    themeColor: [
+      { media: "(prefers-color-scheme: light)", color: colors.light },
+      { media: "(prefers-color-scheme: dark)", color: colors.dark },
+    ],
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// Runs before the first paint so the saved light/dark choice never flashes (without one, the
+// default mode from Admin → Appearance applies). It also enables scroll reveals only when
+// JavaScript runs and the visitor hasn't asked for reduced motion.
+function themeScript(defaultMode: "light" | "dark") {
+  return `(function(){try{var s=localStorage.getItem("theme");var t=s==="light"||s==="dark"?s:"${defaultMode}";document.documentElement.classList.toggle("dark",t==="dark");if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("motion-ok")}catch(e){}})();`;
+}
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme = await getTheme();
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${site.defaultTheme === "dark" ? "dark" : ""} h-full antialiased`}
+      data-preset={theme.preset}
+      data-pattern={theme.pattern}
+      data-cards={theme.cards}
+      data-corners={theme.corners}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${theme.mode === "dark" ? "dark" : ""} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Theme colours (validated hex values and preset constants only; see lib/theme.ts). */}
+        <style dangerouslySetInnerHTML={{ __html: themeCss(theme) }} />
+        <script dangerouslySetInnerHTML={{ __html: themeScript(theme.mode) }} />
       </head>
       <body className="flex min-h-full flex-col">
         <a

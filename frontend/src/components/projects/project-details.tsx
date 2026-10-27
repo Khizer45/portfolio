@@ -49,7 +49,7 @@ export function BulletList({ items }: { items: string[] }) {
 
 export function FeatureList({ features }: { features: ProjectFeature[] }) {
   return (
-    <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+    <ul className="divide-y divide-line overflow-hidden card rounded-xl">
       {features.map((feature) => {
         const meta = featureStatusMeta[feature.status];
         const { icon: Icon, className } = featureIcon[feature.status];

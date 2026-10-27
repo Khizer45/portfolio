@@ -343,3 +343,63 @@ def test_profile_availability_card_and_currently_building(admin, client):
     assert admin.put("/api/v1/admin/profile", json=too_many).status_code == 422
     untitled = {**payload, "currently_building": [{"title": " "}]}
     assert admin.put("/api/v1/admin/profile", json=untitled).status_code == 422
+
+
+def test_profile_theme_settings(admin, client):
+    base = {"display_name": "Khizer Hayat", "headline": "Engineer"}
+    # Defaults: the Blueprint theme in light mode.
+    assert admin.put("/api/v1/admin/profile", json=base).status_code == 200
+    profile = client.get("/api/v1/profile").json()
+    assert (profile["theme_preset"], profile["theme_mode"], profile["theme_cards"]) == ("blueprint", "light", "offset")
+    assert profile["theme_accent"] is None
+
+    custom = {
+        **base,
+        "theme_preset": "ocean",
+        "theme_mode": "dark",
+        "theme_accent": "#C2381D",
+        "theme_button": "",
+        "theme_pattern": "dots",
+        "theme_cards": "soft",
+        "theme_corners": "sharp",
+    }
+    assert admin.put("/api/v1/admin/profile", json=custom).status_code == 200
+    profile = client.get("/api/v1/profile").json()
+    assert profile["theme_preset"] == "ocean" and profile["theme_mode"] == "dark"
+    assert profile["theme_accent"] == "#c2381d"  # stored lowercase
+    assert profile["theme_button"] is None  # "" means "use the theme's colour"
+    assert (profile["theme_pattern"], profile["theme_cards"], profile["theme_corners"]) == ("dots", "soft", "sharp")
+
+    # Only known values and plain hex colours are accepted (the colours end up in CSS).
+    for field, value in [
+        ("theme_preset", "neon"),
+        ("theme_mode", "auto"),
+        ("theme_accent", "red"),
+        ("theme_accent", "#fff"),
+        ("theme_accent", "#c2381d;}body{display:none"),
+        ("theme_button", "url(x)"),
+        ("theme_pattern", "stripes"),
+        ("theme_cards", "3d"),
+        ("theme_corners", "round"),
+    ]:
+        response = admin.put("/api/v1/admin/profile", json={**custom, field: value})
+        assert response.status_code == 422, (field, value)
+
+
+def test_project_summaries_include_up_to_three_highlights(admin, client):
+    category = admin.post("/api/v1/admin/project-categories", json={"title": "Highlights", "short_title": "HL"}).json()
+    results = [{"label": f"Metric {i}", "value": f"{i}0%"} for i in range(5)]
+    project = {
+        "title": "Highlight project",
+        "summary": "Has measured results.",
+        "category_id": category["id"],
+        "status": "completed",
+        "is_published": True,
+        "results": results,
+    }
+    created = admin.post("/api/v1/admin/projects", json=project)
+    assert created.status_code == 201, created.text
+    listed = next(p for p in client.get("/api/v1/projects").json()["items"] if p["title"] == "Highlight project")
+    assert [m["label"] for m in listed["highlights"]] == ["Metric 0", "Metric 1", "Metric 2"]
+    detail = client.get(f"/api/v1/projects/{listed['slug']}").json()
+    assert len(detail["results"]) == 5 and len(detail["highlights"]) == 3

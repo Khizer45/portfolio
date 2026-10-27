@@ -201,6 +201,47 @@ export function Field(props: FieldProps) {
     case "repeater":
       return <Repeater {...props} field={field} />;
 
+    case "color": {
+      const valid = /^#[0-9a-fA-F]{6}$/.test(text);
+      return (
+        <div className={cn(field.wide && "sm:col-span-2")}>
+          <Label htmlFor={id} field={field} />
+          <div className="flex items-center gap-2">
+            {/* The picker can't be empty, so it shows the typed colour (or grey) and the text box holds the value. */}
+            <input
+              type="color"
+              value={valid ? text.toLowerCase() : "#888888"}
+              onChange={(e) => onChange(e.target.value)}
+              aria-label={`${field.label}: colour picker`}
+              className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-line-strong bg-surface p-1"
+            />
+            <input
+              {...common}
+              type="text"
+              value={text}
+              placeholder={field.placeholder ?? "Not set"}
+              onChange={(e) => onChange(e.target.value.trim())}
+              maxLength={7}
+              autoComplete="off"
+              spellCheck={false}
+              className={cn(inputClass, "h-10 font-mono")}
+            />
+            {text && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="h-10 shrink-0 rounded-lg px-3 text-sm text-fg-muted hover:bg-surface-muted hover:text-fg"
+              >
+                Clear
+                <span className="sr-only"> {field.label}</span>
+              </button>
+            )}
+          </div>
+          <Hint id={id} help={field.help} error={error} />
+        </div>
+      );
+    }
+
     default: {
       const type =
         field.type === "number"

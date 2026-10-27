@@ -127,7 +127,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
       </header>
 
       <Container className="py-12 sm:py-16">
-        <figure className="overflow-hidden rounded-2xl border border-line bg-surface">
+        <figure className="overflow-hidden card rounded-2xl">
           <div className={cover ? "aspect-[16/9]" : "h-44 sm:h-56"}>
             {cover ? (
               <ProjectImageView image={cover} eager />
@@ -194,7 +194,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
               <DetailSection id="architecture" title="Architecture">
                 {project.architecture && <p className="leading-relaxed text-fg-muted">{project.architecture}</p>}
                 {diagrams.map((diagram) => (
-                  <figure key={diagram.url} className="mt-6 overflow-hidden rounded-xl border border-line bg-surface">
+                  <figure key={diagram.url} className="mt-6 overflow-hidden card rounded-xl">
                     <ProjectImageView image={diagram} className="object-contain" />
                     {diagram.caption && (
                       <figcaption className="border-t border-line px-4 py-2.5 text-sm text-fg-subtle">
@@ -210,7 +210,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
               <DetailSection id="decisions" title="Key engineering decisions">
                 <dl className="space-y-5">
                   {project.decisions.map((decision) => (
-                    <div key={decision.title} className="rounded-xl border border-line bg-surface p-5">
+                    <div key={decision.title} className="card rounded-xl p-5">
                       <dt className="font-medium text-fg">{decision.title}</dt>
                       <dd className="mt-2 text-sm leading-relaxed text-fg-muted">{decision.detail}</dd>
                     </div>
@@ -236,7 +236,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
                 {project.results.length > 0 ? (
                   <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {project.results.map((metric) => (
-                      <li key={metric.label} className="rounded-xl border border-line bg-surface p-5">
+                      <li key={metric.label} className="card rounded-xl p-5">
                         <p className="text-3xl font-semibold tracking-tight text-fg">{metric.value}</p>
                         <p className="mt-1 text-sm font-medium text-fg-muted">{metric.label}</p>
                         {metric.context && <p className="mt-3 text-xs leading-relaxed text-fg-subtle">{metric.context}</p>}
@@ -249,7 +249,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
                     className={
                       project.results.length > 0
                         ? "mt-5 text-sm text-fg-subtle"
-                        : "flex gap-3 rounded-xl border border-line bg-surface p-5 text-sm leading-relaxed text-fg-muted"
+                        : "flex gap-3 card rounded-xl p-5 text-sm leading-relaxed text-fg-muted"
                     }
                   >
                     {project.results.length === 0 && (
@@ -282,7 +282,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
                 <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {gallery.map((image) => (
                     <li key={image.url}>
-                      <figure className="overflow-hidden rounded-xl border border-line bg-surface">
+                      <figure className="overflow-hidden card rounded-xl">
                         <ProjectImageView image={image} />
                         {image.caption && (
                           <figcaption className="border-t border-line px-4 py-2.5 text-sm text-fg-subtle">
@@ -359,7 +359,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
             {previous ? (
               <Link
                 href={`/projects/${previous.slug}`}
-                className="group rounded-xl border border-line p-5 transition-colors hover:border-line-strong"
+                className="card card-hover group rounded-xl p-5"
               >
                 <span className="flex items-center gap-1.5 text-xs text-fg-subtle">
                   <ArrowLeft className="size-3.5" aria-hidden="true" /> Previous project
@@ -372,7 +372,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
             {next && (
               <Link
                 href={`/projects/${next.slug}`}
-                className="group rounded-xl border border-line p-5 text-right transition-colors hover:border-line-strong"
+                className="card card-hover group rounded-xl p-5 text-right"
               >
                 <span className="flex items-center justify-end gap-1.5 text-xs text-fg-subtle">
                   Next project <ArrowRight className="size-3.5" aria-hidden="true" />

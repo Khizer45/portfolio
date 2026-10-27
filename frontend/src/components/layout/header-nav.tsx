@@ -68,10 +68,10 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative rounded-md px-3 py-2 text-sm transition-colors duration-150",
+                    "block rounded-md border px-3 py-1.5 text-sm transition-colors duration-150",
                     active
-                      ? "font-medium text-fg after:absolute after:inset-x-3 after:-bottom-[13px] after:h-px after:bg-accent"
-                      : "text-fg-muted hover:text-fg",
+                      ? "border-[var(--btn-border-secondary)] bg-surface font-medium text-fg shadow-[var(--btn-shadow)]"
+                      : "border-transparent text-fg-muted hover:bg-surface-muted hover:text-fg",
                   )}
                 >
                   {item.label}

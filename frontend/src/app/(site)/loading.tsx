@@ -14,8 +14,8 @@ export default function Loading() {
         <div className="mt-6 h-4 w-full max-w-2xl rounded bg-surface-muted" />
         <div className="mt-3 h-4 w-2/3 max-w-xl rounded bg-surface-muted" />
         <div className="mt-14 grid gap-5 sm:grid-cols-2">
-          <div className="h-64 rounded-2xl border border-line bg-surface" />
-          <div className="h-64 rounded-2xl border border-line bg-surface" />
+          <div className="h-64 card rounded-2xl" />
+          <div className="h-64 card rounded-2xl" />
         </div>
       </div>
     </Container>

@@ -14,7 +14,7 @@ export function SiteHeader({ name, items }: { name: string; items: readonly NavI
         <Link href="/" className="group flex items-center gap-2.5 rounded-md">
           <span
             aria-hidden="true"
-            className="grid size-8 place-items-center rounded-md bg-accent-fill font-mono text-[0.75rem] font-bold text-accent-fill-fg transition-transform duration-200 group-hover:-rotate-6"
+            className="grid size-8 place-items-center rounded-md border border-[var(--btn-border)] bg-accent-fill font-mono text-[0.75rem] font-bold text-accent-fill-fg shadow-[var(--btn-shadow)] transition-transform duration-200 group-hover:-rotate-6"
           >
             {initials(name)}
           </span>

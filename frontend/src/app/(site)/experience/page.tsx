@@ -57,7 +57,7 @@ export default async function ExperiencePage() {
                       <p className="font-mono text-sm text-fg">{formatRange(item.start_date, end)}</p>
                       {duration && <p className="mt-0.5 text-xs text-fg-subtle">{duration}</p>}
                     </div>
-                    <article className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+                    <article className="card rounded-2xl p-5 sm:p-6">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <h3 className="text-lg font-semibold tracking-tight">{item.role}</h3>

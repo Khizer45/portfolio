@@ -83,6 +83,7 @@ def _summary_fields(project: Project) -> dict:
         "cover_image": _cover(project),
         "start_date": project.start_date,
         "end_date": project.end_date,
+        "highlights": (project.results or [])[:3],
     }
 
 

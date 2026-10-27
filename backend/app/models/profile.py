@@ -49,6 +49,17 @@ class ProfileSettings(UUIDPrimaryKey, Timestamps, Base):
         JSONB, nullable=False, default=list, server_default=text("'[]'")
     )
 
+    # Site appearance (Admin → Profile → Appearance). The colours are optional overrides.
+    theme_preset: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="blueprint", server_default="blueprint"
+    )
+    theme_mode: Mapped[str] = mapped_column(String(10), nullable=False, default="light", server_default="light")
+    theme_accent: Mapped[str | None] = mapped_column(String(7))
+    theme_button: Mapped[str | None] = mapped_column(String(7))
+    theme_pattern: Mapped[str] = mapped_column(String(10), nullable=False, default="grid", server_default="grid")
+    theme_cards: Mapped[str] = mapped_column(String(10), nullable=False, default="offset", server_default="offset")
+    theme_corners: Mapped[str] = mapped_column(String(10), nullable=False, default="rounded", server_default="rounded")
+
     focus_areas: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False, default=list, server_default="{}")
     spoken_languages: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False, default=list, server_default="{}")
     career_interests: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False, default=list, server_default="{}")

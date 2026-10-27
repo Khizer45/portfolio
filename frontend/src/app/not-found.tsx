@@ -54,7 +54,7 @@ export default async function NotFound() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="group flex items-center justify-between gap-4 rounded-xl border border-line bg-surface p-4 transition-colors hover:border-line-strong"
+                  className="card card-hover group flex items-center justify-between gap-4 rounded-xl p-4"
                 >
                   <span>
                     <span className="block font-medium text-fg">{item.label}</span>

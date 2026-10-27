@@ -6,12 +6,13 @@ type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md";
 
 const base =
-  "group/button inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-[background-color,border-color,color] duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-150";
+  "group/button inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-150";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-accent-fill text-accent-fill-fg hover:bg-accent-fill-hover",
-  secondary: "border border-line-strong bg-transparent text-fg hover:border-fg-subtle hover:bg-surface-muted",
-  ghost: "text-fg-muted hover:bg-surface-muted hover:text-fg",
+  // The border and shadow come from the theme's card style (see btn-press in globals.css).
+  primary: "btn-press border border-[var(--btn-border)] bg-accent-fill text-accent-fill-fg hover:bg-accent-fill-hover",
+  secondary: "btn-press border border-[var(--btn-border-secondary)] bg-surface text-fg hover:bg-surface-muted",
+  ghost: "text-fg-muted transition-colors hover:bg-surface-muted hover:text-fg",
 };
 
 const sizes: Record<Size, string> = {

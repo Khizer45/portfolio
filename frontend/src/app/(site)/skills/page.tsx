@@ -34,7 +34,7 @@ export default async function SkillsPage() {
               <section
                 key={group.slug}
                 aria-labelledby={`skills-${group.slug}`}
-                className="rounded-2xl border border-line bg-surface"
+                className="card rounded-2xl"
               >
                 <h2 id={`skills-${group.slug}`} className="border-b border-line px-5 py-4 font-semibold sm:px-6">
                   {group.title}

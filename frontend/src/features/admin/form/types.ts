@@ -22,6 +22,8 @@ export type FieldDef =
   | (Base & { type: "url" })
   /** Absolute URL, or a path to a file in the frontend's public/ folder ("/cv/file.pdf"). */
   | (Base & { type: "link" })
+  /** Optional "#rrggbb" colour, picked or typed. Empty means "not set". */
+  | (Base & { type: "color" })
   | (Base & { type: "textarea"; maxLength?: number; rows?: number; markdown?: boolean })
   | (Base & { type: "number"; min?: number; max?: number })
   | (Base & { type: "checkbox" })

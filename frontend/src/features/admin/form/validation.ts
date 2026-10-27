@@ -1,6 +1,7 @@
 import type { FieldDef, FieldErrors, FormSection, FormValues } from "@/features/admin/form/types";
 
 const PARTIAL_DATE = /^\d{4}(-(0[1-9]|1[0-2]))?$/;
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Same rule as the backend: "%" only as a "%XX" escape, and no ".." segment, backslash or
 // control character once decoded (the site decodes these paths to find the file).
@@ -56,6 +57,9 @@ function validateField(field: FieldDef, value: unknown, key: string, errors: Fie
       break;
     case "partial-date":
       if (!PARTIAL_DATE.test(text)) errors[key] = "Use YYYY or YYYY-MM, e.g. 2025-07.";
+      break;
+    case "color":
+      if (!HEX_COLOR.test(text)) errors[key] = "Use a 6-digit hex colour, e.g. #1f2a55.";
       break;
     case "tags":
     case "lines": {
