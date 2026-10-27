@@ -1,15 +1,14 @@
-import { ArrowRight, ArrowUpRight, BadgeCheck, FolderOpen, GraduationCap, Mail, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, FolderOpen, GraduationCap, MapPin } from "lucide-react";
 import Link from "next/link";
 
-import { CopyButton } from "@/components/copy-button";
 import { CvButton } from "@/components/cv-button";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { ProjectGrid } from "@/components/projects/project-card";
 import { ArrowLink } from "@/components/ui/arrow-link";
+import { Tag } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
-import { GitHubIcon, LinkedInIcon } from "@/components/ui/icons";
 import { SectionHeading } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
 import {
@@ -28,9 +27,6 @@ export const revalidate = 300;
 
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as React.CSSProperties;
 
-const socialClasses =
-  "grid size-10 place-items-center rounded-lg border border-line text-fg-muted transition-colors duration-150 hover:border-line-strong hover:text-fg";
-
 const tileClasses = "rounded-2xl border border-line bg-surface p-5";
 const tileLabelClasses = "flex items-center gap-1.5 font-mono text-[0.6875rem] tracking-[0.1em] text-fg-subtle uppercase";
 
@@ -48,7 +44,14 @@ export default async function HomePage() {
   const building = projects.filter((p) => p.status === "in_progress");
   const experience = allExperience.slice(0, 2);
   const certifications = allCertifications.slice(0, 3);
-  const technologyCount = new Set(projects.flatMap((p) => p.technologies)).size;
+  const technologyUse = new Map<string, number>();
+  for (const tech of projects.flatMap((p) => p.technologies)) technologyUse.set(tech, (technologyUse.get(tech) ?? 0) + 1);
+  const technologyCount = technologyUse.size;
+  // Ordered by how many published projects use each technology; ties keep project order.
+  const topTechnologies = [...technologyUse.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([tech]) => tech);
   const stats = [
     { label: "Projects", value: projects.length },
     { label: "Technologies", value: technologyCount },
@@ -86,14 +89,12 @@ export default async function HomePage() {
             )}
             <h1
               id="hero-heading"
-              className="animate-enter mt-4 text-[3.25rem] leading-[0.95] font-semibold tracking-[-0.04em] sm:text-7xl lg:text-[5.25rem]"
-              style={delay(120)}
+              className="mt-4 text-[3.25rem] leading-[0.95] font-semibold tracking-[-0.04em] sm:text-7xl lg:text-[5.25rem]"
             >
               {profile.display_name}
             </h1>
             <p
-              className="animate-enter mt-7 max-w-2xl text-xl leading-snug text-balance text-fg sm:text-2xl"
-              style={delay(180)}
+              className="mt-7 max-w-2xl text-xl leading-snug text-balance text-fg sm:text-2xl"
             >
               {profile.headline}
             </p>
@@ -107,37 +108,23 @@ export default async function HomePage() {
                 View projects
                 <ArrowRight aria-hidden="true" className="group-hover/button:translate-x-0.5" />
               </ButtonLink>
+              <CvButton url={cvLink(profile)} name={profile.display_name} />
               <ButtonLink href="/contact" variant="secondary">
                 Contact me
               </ButtonLink>
-              <CvButton url={cvLink(profile)} name={profile.display_name} />
             </div>
-            <ul className="animate-enter mt-9 flex items-center gap-2" style={delay(300)} aria-label="Profiles">
-              {profile.github_url && (
-                <li>
-                  <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className={socialClasses}>
-                    <GitHubIcon className="size-[1.125rem]" />
-                    <span className="sr-only">GitHub (opens in a new tab)</span>
-                  </a>
-                </li>
-              )}
-              {profile.linkedin_url && (
-                <li>
-                  <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className={socialClasses}>
-                    <LinkedInIcon className="size-[1.125rem]" />
-                    <span className="sr-only">LinkedIn (opens in a new tab)</span>
-                  </a>
-                </li>
-              )}
-              {profile.contact_email && (
-                <li>
-                  <a href={`mailto:${profile.contact_email}`} className={socialClasses}>
-                    <Mail className="size-[1.125rem]" aria-hidden="true" />
-                    <span className="sr-only">Email {profile.contact_email}</span>
-                  </a>
-                </li>
-              )}
-            </ul>
+            {topTechnologies.length > 0 && (
+              <div className="animate-enter mt-10" style={delay(300)}>
+                <p className={tileLabelClasses}>Most used in my projects</p>
+                <ul className="mt-3 flex flex-wrap gap-2" aria-label="Most used technologies">
+                  {topTechnologies.map((tech) => (
+                    <li key={tech}>
+                      <Tag>{tech}</Tag>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* At a glance: bento tiles built only from real profile data */}
@@ -146,6 +133,34 @@ export default async function HomePage() {
               At a glance
             </h2>
             <div className="grid grid-cols-2 gap-3">
+              {(profile.profile_image_url || glanceFooter) && (
+                <div className={`${tileClasses} animate-enter col-span-2 flex items-center gap-5`} style={delay(140)}>
+                  {profile.profile_image_url && (
+                    // Set in Admin → Profile; it may be on any host, so next/image is not used.
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={profile.profile_image_url}
+                      alt={`Portrait of ${profile.display_name}`}
+                      width={96}
+                      height={96}
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      className="size-20 shrink-0 rounded-xl border border-line bg-surface-muted object-cover object-top sm:size-24"
+                    />
+                  )}
+                  <div className="min-w-0 space-y-1.5 text-sm text-fg-muted">
+                    {profile.location && (
+                      <p className="flex items-center gap-2">
+                        <MapPin className="size-4 shrink-0 text-accent" aria-hidden="true" />
+                        {profile.location}
+                      </p>
+                    )}
+                    {profile.spoken_languages.length > 0 && (
+                      <p className="pl-6">{profile.spoken_languages.join(", ")}</p>
+                    )}
+                  </div>
+                </div>
+              )}
               {education && (
                 <div className={`${tileClasses} animate-enter col-span-2`} style={delay(180)}>
                   <p className={tileLabelClasses}>
@@ -189,15 +204,6 @@ export default async function HomePage() {
                   </ul>
                 </div>
               )}
-              {glanceFooter && (
-                <p
-                  className={`${tileClasses} animate-enter col-span-2 flex items-center gap-2 text-sm text-fg-muted`}
-                  style={delay(360)}
-                >
-                  <MapPin className="size-4 shrink-0 text-accent" aria-hidden="true" />
-                  {glanceFooter}
-                </p>
-              )}
             </div>
           </aside>
         </Container>
@@ -238,7 +244,7 @@ export default async function HomePage() {
                 id="skills-heading"
                 eyebrow="02 — Stack"
                 title="Skills & tools"
-                description="The languages, frameworks, and tools I use most. Proficiency levels are on the skills page."
+                description="The languages, frameworks, and tools I use most. The full list, grouped by area, is on the skills page."
                 action={<ArrowLink href="/skills">View all skills</ArrowLink>}
               />
             </Reveal>
@@ -315,7 +321,7 @@ export default async function HomePage() {
                         {highlight}
                       </p>
                     ))}
-                    <ArrowLink href="/about#education" className="mt-4">
+                    <ArrowLink href="/education" className="mt-4">
                       Education details
                     </ArrowLink>
                   </div>
@@ -359,32 +365,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Contact */}
-      <section aria-labelledby="contact-heading" className="border-t border-line py-20 sm:py-28">
-        <Container>
-          <Reveal className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div>
-              <p className="font-mono text-xs tracking-[0.12em] text-accent uppercase">05 — Contact</p>
-              <h2
-                id="contact-heading"
-                className="mt-4 text-4xl font-semibold tracking-[-0.03em] text-balance sm:text-5xl lg:text-6xl"
-              >
-                Have a role or project in mind?
-              </h2>
-              <p className="mt-5 max-w-xl leading-relaxed text-fg-muted">
-                I&apos;m open to entry-level roles, internships, and freelance projects in software, AI, and backend
-                engineering.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/contact">
-                Send a message <ArrowRight aria-hidden="true" className="group-hover/button:translate-x-0.5" />
-              </ButtonLink>
-              {profile.contact_email && <CopyButton value={profile.contact_email} label="Copy email" size="md" />}
-            </div>
-          </Reveal>
-        </Container>
-      </section>
     </>
   );
 }

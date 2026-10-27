@@ -3,7 +3,10 @@ import type { Education, Profile } from "@/types/api";
 
 /** schema.org Person data so search engines can identify the site owner. */
 export function PersonJsonLd({ profile, education }: { profile: Profile; education?: Education }) {
-  const sameAs = [profile.github_url, profile.linkedin_url, ...profile.social_links.map((l) => l.url)].filter(Boolean);
+  const sameAs = [profile.github_url, profile.linkedin_url, ...profile.social_links.map((l) => l.url)].filter(
+    // sameAs is for profile pages; a WhatsApp chat link isn't one.
+    (url) => url && !/^https?:\/\/(wa\.me|(api\.|web\.)?whatsapp\.com)\//i.test(url),
+  );
   const data = {
     "@context": "https://schema.org",
     "@type": "Person",

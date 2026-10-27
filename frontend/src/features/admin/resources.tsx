@@ -12,7 +12,6 @@ import {
   employmentTypeLabel,
   featureStatusMeta,
   projectStatusMeta,
-  skillLevelMeta,
   workModeLabel,
 } from "@/lib/labels";
 import type { AdminRecord } from "@/types/api";
@@ -54,7 +53,6 @@ const opts = (record: Record<string, string>): Option[] =>
 
 const statusOptions = opts(Object.fromEntries(Object.entries(projectStatusMeta).map(([k, v]) => [k, v.label])));
 const featureOptions = opts(Object.fromEntries(Object.entries(featureStatusMeta).map(([k, v]) => [k, v.label])));
-const levelOptions = opts(Object.fromEntries(Object.entries(skillLevelMeta).map(([k, v]) => [k, v.label])));
 const achievementOptions = opts(Object.fromEntries(Object.entries(achievementTypeMeta).map(([k, v]) => [k, v.singular])));
 const iconOptions = opts({
   layout: "Layout (frontend)",
@@ -281,15 +279,7 @@ const skills: ResourceDef = {
   reorderable: true,
   columns: [
     { label: "Category", render: (item) => str((item.category as { title?: string } | undefined)?.title), secondary: true },
-    {
-      label: "Level",
-      render: (item) => (
-        <span className="text-sm text-fg-muted">
-          {skillLevelMeta[item.level as keyof typeof skillLevelMeta]?.label}
-          {item.is_learning ? " · Learning" : ""}
-        </span>
-      ),
-    },
+    { label: "Status", render: (item) => <span className="text-sm text-fg-muted">{item.is_learning ? "Learning" : "—"}</span> },
   ],
   toggles: [
     visibleToggle,
@@ -302,7 +292,6 @@ const skills: ResourceDef = {
       fields: [
         { name: "name", label: "Name", type: "text", required: true, maxLength: 80, placeholder: "FastAPI" },
         { name: "category_id", label: "Category", type: "relation", source: "skill-categories", required: true },
-        { name: "level", label: "Proficiency", type: "select", options: levelOptions, required: true, defaultValue: "beginner", help: Object.values(skillLevelMeta).map((m) => `${m.label}: ${m.description}`).join(" ") },
         { name: "evidence_project_id", label: "Evidence project", type: "relation", source: "projects", allowEmpty: "None", help: "A project that demonstrates this skill. Only shown if published." },
         { name: "description", label: "Description", type: "textarea", rows: 2, maxLength: 1000 },
         { name: "is_learning", label: "Currently learning", type: "checkbox" },

@@ -6,33 +6,15 @@ import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { getSkillGroups } from "@/lib/content";
-import { cn } from "@/lib/format";
-import { skillLevelMeta } from "@/lib/labels";
-import type { SkillLevel } from "@/types/api";
 
 export const metadata: Metadata = {
   title: "Skills",
   description:
-    "Technical skills of Khizer Hayat grouped by area — Python, FastAPI, machine learning, deep learning, computer vision, Docker, and more — with honest proficiency labels.",
+    "Technical skills of Khizer Hayat grouped by area — Python, FastAPI, machine learning, deep learning, computer vision, Docker, and more.",
   alternates: { canonical: "/skills" },
 };
 
 export const revalidate = 300;
-
-const levels = Object.keys(skillLevelMeta) as SkillLevel[];
-
-function LevelMeter({ level }: { level: SkillLevel }) {
-  return (
-    <span aria-hidden="true" className="flex gap-0.5">
-      {[1, 2, 3].map((step) => (
-        <span
-          key={step}
-          className={cn("h-1.5 w-3 rounded-full", step <= skillLevelMeta[level].steps ? "bg-accent" : "bg-line-strong")}
-        />
-      ))}
-    </span>
-  );
-}
 
 export default async function SkillsPage() {
   const groups = await getSkillGroups();
@@ -41,36 +23,13 @@ export default async function SkillsPage() {
     <>
       <PageHeader
         eyebrow="Skills"
-        title="Skills and proficiency"
-        description="Grouped by area, with descriptive proficiency labels instead of percentages. Where a skill is applied in a project, it links to it."
+        title="Skills and tools"
+        description="The languages, frameworks, and tools I work with, grouped by area. Where a skill is applied in a project, it links to it."
       />
 
       <Container className="py-12 sm:py-16">
-        <section aria-labelledby="legend-heading" className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
-          <h2 id="legend-heading" className="font-medium">
-            How to read these levels
-          </h2>
-          <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {levels.map((level) => (
-              <div key={level}>
-                <dt className="flex items-center gap-2.5 text-sm font-medium text-fg">
-                  <LevelMeter level={level} />
-                  {skillLevelMeta[level].label}
-                </dt>
-                <dd className="mt-1.5 text-sm leading-relaxed text-fg-muted">{skillLevelMeta[level].description}</dd>
-              </div>
-            ))}
-            <div>
-              <dt className="flex items-center gap-2.5 text-sm font-medium text-fg">
-                <LearningTag />
-              </dt>
-              <dd className="mt-1.5 text-sm leading-relaxed text-fg-muted">Currently studying and practising.</dd>
-            </div>
-          </dl>
-        </section>
-
         {groups.length > 0 ? (
-          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2">
             {groups.map((group) => (
               <section
                 key={group.slug}
@@ -83,16 +42,10 @@ export default async function SkillsPage() {
                 <ul className="divide-y divide-line">
                   {group.skills.map((skill) => (
                     <li key={skill.name} className="px-5 py-3.5 sm:px-6">
-                      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                        <p className="flex flex-wrap items-center gap-2 font-medium text-fg">
-                          {skill.name}
-                          {skill.is_learning && <LearningTag />}
-                        </p>
-                        <p className="flex items-center gap-2.5 text-sm text-fg-muted">
-                          <LevelMeter level={skill.level} />
-                          <span>{skillLevelMeta[skill.level].label}</span>
-                        </p>
-                      </div>
+                      <p className="flex flex-wrap items-center gap-2 font-medium text-fg">
+                        {skill.name}
+                        {skill.is_learning && <LearningTag />}
+                      </p>
                       {skill.description && (
                         <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{skill.description}</p>
                       )}
@@ -116,9 +69,8 @@ export default async function SkillsPage() {
         ) : (
           <EmptyState
             icon={Wrench}
-            className="mt-12"
             title="Skills will be added here"
-            description="Languages, frameworks, and tools will be listed here with their proficiency levels."
+            description="Languages, frameworks, and tools will be listed here, grouped by area."
           />
         )}
       </Container>

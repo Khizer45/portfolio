@@ -89,9 +89,9 @@ export function ContactForm({ email }: { email: string }) {
       <p role="status" className="text-sm text-fg-muted">
         {opened && (
           <>
-            Didn&apos;t open? Email me directly at{" "}
+            Didn&apos;t open?{" "}
             <a href={`mailto:${email}`} className="font-medium text-accent hover:underline">
-              {email}
+              Try the email link again
             </a>
             .
           </>

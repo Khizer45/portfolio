@@ -47,7 +47,9 @@ type RequestOptions = { method?: string; body?: unknown; signal?: AbortSignal };
 export async function apiRequest<T>(path: string, options: RequestOptions = {}, retried = false): Promise<T> {
   const { method = "GET", body, signal } = options;
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  // A file (Blob) is sent as-is with its own type; anything else as JSON.
+  const isFile = body instanceof Blob;
+  if (body !== undefined) headers["Content-Type"] = isFile ? body.type || "application/octet-stream" : "application/json";
   if (UNSAFE_METHODS.has(method) && csrfToken) headers["X-CSRF-Token"] = csrfToken;
 
   let response: Response;
@@ -55,7 +57,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}, 
     response = await fetch(`${BASE}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isFile ? body : JSON.stringify(body),
       credentials: "include",
       cache: "no-store",
       signal,
@@ -106,7 +108,7 @@ export const api = {
   post: <T>(path: string, body?: unknown) => apiRequest<T>(path, { method: "POST", body }),
   put: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: "PUT", body }),
   patch: <T>(path: string, body: unknown) => apiRequest<T>(path, { method: "PATCH", body }),
-  delete: (path: string) => apiRequest<void>(path, { method: "DELETE" }),
+  delete: <T = void>(path: string) => apiRequest<T>(path, { method: "DELETE" }),
 };
 
 /**

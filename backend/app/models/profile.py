@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, CheckConstraint, String, Text, text
+from sqlalchemy import Boolean, CheckConstraint, LargeBinary, String, Text, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,6 +27,14 @@ class ProfileSettings(UUIDPrimaryKey, Timestamps, Base):
     profile_image_url: Mapped[str | None] = mapped_column(String(2048))
     # [{"label": "Kaggle", "url": "https://..."}]
     social_links: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default=text("'[]'"))
+    # Extra links for the header menu and footer: [{"label": "Blog", "url": "https://..."}]
+    nav_links: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list, server_default=text("'[]'"))
+    # Optional line shown in the footer under the name (the role is shown when empty).
+    footer_text: Mapped[str] = mapped_column(String(300), nullable=False, default="", server_default="")
+    # Portrait uploaded in the admin. Kept in the database because free hosts have ephemeral
+    # disks; deferred so the bytes are only loaded when the image itself is requested.
+    photo: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
+    photo_type: Mapped[str | None] = mapped_column(String(32))
 
     availability_open: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     availability_label: Mapped[str] = mapped_column(String(150), nullable=False, default="")

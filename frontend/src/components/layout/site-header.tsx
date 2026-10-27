@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import { HeaderNav } from "@/components/layout/header-nav";
 import { Container } from "@/components/ui/container";
-import { navigation } from "@/data/site";
+import type { NavItem } from "@/data/site";
 import { initials } from "@/lib/format";
 
-export function SiteHeader({ name }: { name: string }) {
+export function SiteHeader({ name, items }: { name: string; items: readonly NavItem[] }) {
   return (
     <header className="sticky top-0 z-50 border-b border-line">
       {/* Blur lives on its own layer: backdrop-filter on the header would trap the fixed mobile menu inside it. */}
@@ -21,7 +21,7 @@ export function SiteHeader({ name }: { name: string }) {
           <span className="font-display text-[0.9375rem] font-semibold tracking-tight">{name}</span>
           <span className="sr-only">, home</span>
         </Link>
-        <HeaderNav items={navigation} />
+        <HeaderNav items={items} />
       </Container>
     </header>
   );

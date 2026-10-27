@@ -5,6 +5,7 @@ from pydantic import EmailStr, Field, field_validator
 
 from app.schemas.common import (
     HttpUrlStr,
+    LinkOrPath,
     OptionalHttpUrl,
     OptionalLinkOrPath,
     ReadSchema,
@@ -21,6 +22,13 @@ class SocialLink(Schema):
     url: HttpUrlStr
 
 
+class NavLink(Schema):
+    """An extra menu link: a page on this site ("/writing") or an external URL."""
+
+    label: text(40)
+    url: LinkOrPath
+
+
 class ProfileWrite(Schema):
     display_name: text(100)
     role: optional_text(150) = None
@@ -34,6 +42,8 @@ class ProfileWrite(Schema):
     cv_url: OptionalLinkOrPath = None
     profile_image_url: OptionalLinkOrPath = None
     social_links: Annotated[list[SocialLink], Field(max_length=12)] = []
+    nav_links: Annotated[list[NavLink], Field(max_length=6)] = []
+    footer_text: optional_text(300) = None
     availability_open: bool = True
     availability_label: optional_text(150) = None
     focus_areas: TagList = []
@@ -62,6 +72,8 @@ class ProfileRead(ReadSchema):
     cv_url: str | None
     profile_image_url: str | None
     social_links: list[SocialLink]
+    nav_links: list[NavLink]
+    footer_text: str
     availability_open: bool
     availability_label: str
     focus_areas: list[str]

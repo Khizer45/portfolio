@@ -64,16 +64,47 @@ test.describe("home page", () => {
   });
 });
 
+test.describe("footer", () => {
+  test("shows icon links, no stack credits, and no written-out email address", async ({ page, request }) => {
+    const profile = await publicGet<Profile & { contact_email: string | null; github_url: string | null }>(
+      request,
+      "/profile",
+    );
+    await page.goto("/");
+    const footer = page.getByRole("contentinfo");
+    await expect(footer).not.toContainText("Built with");
+    if (profile.contact_email) {
+      await expect(footer).not.toContainText(profile.contact_email);
+      const email = footer.getByRole("link", { name: new RegExp(`^Email ${profile.display_name.split(" ")[0]}`) });
+      await expect(email).toHaveAttribute("href", `mailto:${profile.contact_email}`);
+    }
+    if (profile.github_url) {
+      await expect(footer.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", profile.github_url);
+    }
+  });
+});
+
 test.describe("navigation", () => {
   const pages = [
     { link: "Projects", path: "/projects", heading: "Things I've built and am building" },
-    { link: "Skills", path: "/skills", heading: "Skills and proficiency" },
+    { link: "Skills", path: "/skills", heading: "Skills and tools" },
     { link: "Experience", path: "/experience", heading: "Experience" },
-    { link: "Certifications", path: "/certifications", heading: "Certifications" },
+    { link: "Education", path: "/education", heading: "Education" },
     { link: "About", path: "/about", heading: "About me" },
-    { link: "Writing", path: "/writing", heading: "Writing" },
     { link: "Contact", path: "/contact", heading: "Get in touch" },
   ];
+
+  test("sections with nothing to show yet are left out of the menu", async ({ page, request }) => {
+    const certifications = await publicGet<unknown[]>(request, "/certifications");
+    const achievements = await publicGet<unknown[]>(request, "/achievements");
+    const articles = await publicGet<{ items: unknown[] }>(request, "/articles");
+    await page.goto("/");
+    const nav = page.getByRole("navigation", { name: "Main", exact: true });
+    await expect(nav.getByRole("link", { name: "Certifications", exact: true })).toHaveCount(
+      certifications.length + achievements.length > 0 ? 1 : 0,
+    );
+    await expect(nav.getByRole("link", { name: "Writing", exact: true })).toHaveCount(articles.items.length > 0 ? 1 : 0);
+  });
 
   test("main navigation links open each page", async ({ page, request }) => {
     const profile = await publicGet<Profile>(request, "/profile");

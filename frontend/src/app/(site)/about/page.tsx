@@ -1,14 +1,11 @@
-import { Mail, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 
 import { CvButton } from "@/components/cv-button";
-import { EducationList } from "@/components/education-list";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { BulletList } from "@/components/projects/project-details";
 import { Tag } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { GitHubIcon, LinkedInIcon } from "@/components/ui/icons";
 import { PageHeader, SectionHeading } from "@/components/ui/page-header";
 import { cvLink, getEducation, getProfile, paragraphs } from "@/lib/content";
 import { initials } from "@/lib/format";
@@ -77,12 +74,6 @@ export default async function AboutPage() {
               </section>
             )}
 
-            {education.length > 0 && (
-              <section aria-labelledby="education" className="scroll-mt-24">
-                <SectionHeading id="education" title="Education" />
-                <EducationList items={education} />
-              </section>
-            )}
           </div>
 
           <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Profile summary">
@@ -93,11 +84,11 @@ export default async function AboutPage() {
                 <img
                   src={profile.profile_image_url}
                   alt={`Portrait of ${profile.display_name}`}
-                  width={160}
-                  height={160}
+                  width={320}
+                  height={320}
                   decoding="async"
                   referrerPolicy="no-referrer"
-                  className="size-20 rounded-2xl border border-line object-cover"
+                  className="aspect-square w-full rounded-xl border border-line bg-surface-muted object-cover object-top"
                 />
               ) : (
                 <span
@@ -130,23 +121,8 @@ export default async function AboutPage() {
                 </dl>
               )}
 
-              <div className="mt-6 flex flex-col gap-2.5">
+              <div className="mt-6 flex flex-col">
                 <CvButton url={cvLink(profile)} name={profile.display_name} variant="primary" />
-                {profile.github_url && (
-                  <ButtonLink href={profile.github_url} external variant="secondary">
-                    <GitHubIcon /> GitHub<span className="sr-only"> (opens in a new tab)</span>
-                  </ButtonLink>
-                )}
-                {profile.linkedin_url && (
-                  <ButtonLink href={profile.linkedin_url} external variant="secondary">
-                    <LinkedInIcon /> LinkedIn<span className="sr-only"> (opens in a new tab)</span>
-                  </ButtonLink>
-                )}
-                {profile.contact_email && (
-                  <ButtonLink href={`mailto:${profile.contact_email}`} variant="ghost">
-                    <Mail aria-hidden="true" /> {profile.contact_email}
-                  </ButtonLink>
-                )}
               </div>
             </div>
           </aside>

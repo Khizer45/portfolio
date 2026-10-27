@@ -8,6 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { navigation, type NavItem } from "@/data/site";
 import { apiGet, apiGetOrNull } from "@/lib/api/server";
 import type {
   Achievement,
@@ -40,6 +41,8 @@ export const FALLBACK_PROFILE: Profile = {
   cv_url: null,
   profile_image_url: null,
   social_links: [],
+  nav_links: [],
+  footer_text: "",
   availability_open: false,
   availability_label: "",
   focus_areas: [],
@@ -163,4 +166,29 @@ export async function getPublishedArticles(): Promise<ArticleSummary[]> {
 
 export async function getArticle(slug: string): Promise<Article | null> {
   return apiGetOrNull<Article>(`/articles/${encodeURIComponent(slug)}`);
+}
+
+/* Navigation --------------------------------------------------------------- */
+
+/**
+ * The main navigation without sections that have nothing to show yet (no
+ * certifications or awards, no published articles). If a check fails, for example
+ * while the API is waking up, the item is kept rather than hidden.
+ */
+export async function getNavigation(profile?: Profile): Promise<readonly NavItem[]> {
+  const [certifications, achievements, articles] = await Promise.allSettled([
+    getCertifications(),
+    getAchievementGroups(),
+    getPublishedArticles(),
+  ]);
+  const has = {
+    certifications:
+      certifications.status === "rejected" ||
+      achievements.status === "rejected" ||
+      certifications.value.length > 0 ||
+      achievements.value.length > 0,
+    articles: articles.status === "rejected" || articles.value.length > 0,
+  };
+  const custom = (profile?.nav_links ?? []).map((link) => ({ label: link.label, href: link.url }));
+  return [...navigation.filter((item) => !item.requires || has[item.requires]), ...custom];
 }

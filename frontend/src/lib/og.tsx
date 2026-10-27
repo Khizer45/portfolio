@@ -28,11 +28,10 @@ export function renderOgImage({
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background: "#09090b",
-          backgroundImage:
-            "radial-gradient(ellipse 60% 70% at 15% 0%, rgba(125,149,255,0.16), transparent), linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
-          backgroundSize: "100% 100%, 48px 48px, 48px 48px",
-          color: "#ededf0",
+          background: "#0b0c0e",
+          backgroundImage: "radial-gradient(rgba(255,255,255,0.07) 1.5px, transparent 1.5px)",
+          backgroundSize: "28px 28px",
+          color: "#f1f1ec",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
@@ -43,10 +42,9 @@ export function renderOgImage({
               justifyContent: "center",
               width: 64,
               height: 64,
-              borderRadius: 16,
-              border: "2px solid rgba(125,149,255,0.45)",
-              background: "rgba(125,149,255,0.1)",
-              color: "#7d95ff",
+              borderRadius: 14,
+              background: "#c6f36b",
+              color: "#0b0c0e",
               fontSize: 26,
               fontWeight: 700,
             }}
@@ -55,15 +53,15 @@ export function renderOgImage({
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 28, fontWeight: 600 }}>{name}</div>
-            <div style={{ fontSize: 22, color: "#a7a7b1" }}>{role}</div>
+            <div style={{ fontSize: 22, color: "#a6a8ad" }}>{role}</div>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ fontSize: 22, color: "#7d95ff", letterSpacing: 3, textTransform: "uppercase" }}>{eyebrow}</div>
+          <div style={{ fontSize: 22, color: "#c6f36b", letterSpacing: 3, textTransform: "uppercase" }}>{eyebrow}</div>
           <div style={{ fontSize: title.length > 60 ? 56 : 68, fontWeight: 700, lineHeight: 1.1, letterSpacing: -1.5 }}>
             {title}
           </div>
-          {subtitle && <div style={{ fontSize: 28, color: "#a7a7b1", lineHeight: 1.4 }}>{subtitle}</div>}
+          {subtitle && <div style={{ fontSize: 28, color: "#a6a8ad", lineHeight: 1.4 }}>{subtitle}</div>}
         </div>
       </div>
     ),

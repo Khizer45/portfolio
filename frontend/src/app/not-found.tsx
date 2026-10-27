@@ -6,7 +6,8 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
-import { cvLink, FALLBACK_PROFILE, getProfile } from "@/lib/content";
+import { navigation as allNavigation } from "@/data/site";
+import { cvLink, FALLBACK_PROFILE, getNavigation, getProfile } from "@/lib/content";
 import type { Profile } from "@/types/api";
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 const suggestions = [
   { href: "/projects", label: "Projects", description: "Case studies and work in progress" },
   { href: "/skills", label: "Skills", description: "Languages, frameworks, and tools" },
-  { href: "/experience", label: "Experience", description: "Work history and education" },
+  { href: "/experience", label: "Experience", description: "Internships and work history" },
   { href: "/contact", label: "Contact", description: "Email, LinkedIn, and GitHub" },
 ];
 
@@ -37,10 +38,11 @@ async function loadProfile(): Promise<{ profile: Profile; cvUrl: string | null }
  */
 export default async function NotFound() {
   const { profile, cvUrl } = await loadProfile();
+  const navigation = await getNavigation(profile).catch(() => allNavigation);
 
   return (
     <>
-      <SiteHeader name={profile.display_name} />
+      <SiteHeader name={profile.display_name} items={navigation} />
       <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
         <Container className="py-20 sm:py-28">
           <p className="font-mono text-sm text-accent">404</p>
@@ -74,7 +76,7 @@ export default async function NotFound() {
           </div>
         </Container>
       </main>
-      <SiteFooter profile={profile} cvUrl={cvUrl} />
+      <SiteFooter profile={profile} cvUrl={cvUrl} items={navigation} />
     </>
   );
 }

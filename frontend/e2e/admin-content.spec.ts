@@ -61,7 +61,8 @@ test.describe("skills", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("New skill");
     await page.getByRole("textbox", { name: "Name", exact: true }).fill(name);
     await page.getByRole("combobox", { name: "Category", exact: true }).selectOption({ label: category });
-    await page.getByRole("combobox", { name: "Proficiency" }).selectOption({ label: "Intermediate" });
+    // Proficiency levels are no longer shown or edited.
+    await expect(page.getByRole("combobox", { name: "Proficiency" })).toHaveCount(0);
     await expect(page.getByRole("checkbox", { name: "Visible on the public site" })).toBeChecked();
 
     let revalidation = waitForRevalidation(page);
@@ -225,7 +226,7 @@ test.describe("certifications", () => {
 });
 
 test.describe("profile", () => {
-  type Profile = Record<string, unknown> & { availability_label: string; availability_open: boolean };
+  type Profile = Record<string, unknown> & { availability_label: string; availability_open: boolean; profile_image_url: string | null };
   const withoutTimestamp = (profile: Profile) => {
     const copy: Record<string, unknown> = { ...profile };
     delete copy.updated_at;
@@ -263,7 +264,7 @@ test.describe("profile", () => {
 
     await eventually(async () => {
       await publicPage.goto("/contact");
-      // The page introduction reads "<availability text>. Email is the most reliable…".
+      // The page introduction reads "<availability text>. Send a message below…".
       await expect(publicPage.getByRole("main").getByText(`${label}.`)).toBeVisible({ timeout: 1_000 });
     });
 
@@ -287,5 +288,46 @@ test.describe("profile", () => {
     // Saving through the form must not have changed any other field.
     const after = await adminApi.get<Profile>("/admin/profile");
     expect(withoutTimestamp(after)).toEqual(withoutTimestamp(saved));
+  });
+
+  test("upload a profile photo, see it on /about, then remove it", async ({ page, context, adminApi }) => {
+    const before = await adminApi.get<Profile>("/admin/profile");
+    // Removing restores "no photo", so only run when there is none to lose.
+    test.skip(Boolean(before.profile_image_url), "The profile already has a photo.");
+    const png = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "base64",
+    );
+
+    await page.goto("/admin/profile");
+    await expect(page.getByText("Upload photo")).toBeVisible();
+    // A file that isn't an image is refused before it is sent.
+    await page.locator('input[type="file"]').setInputFiles({ name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("hi") });
+    await expect(page.getByRole("alert").filter({ hasText: "Choose a JPG, PNG, or WebP image." })).toBeVisible();
+
+    let revalidation = waitForRevalidation(page);
+    await page.locator('input[type="file"]').setInputFiles({ name: "me.png", mimeType: "image/png", buffer: png });
+    await expect(toast(page, "Photo updated.")).toBeVisible();
+    expect((await revalidation).status()).toBe(200);
+    await expect(page.getByRole("img", { name: "Current profile photo" })).toBeVisible();
+
+    const saved = await adminApi.get<Profile>("/admin/profile");
+    expect(saved.profile_image_url).toMatch(/^\/api\/v1\/profile\/photo\/[0-9a-f]{16}$/);
+    const image = await page.request.get(saved.profile_image_url!);
+    expect(image.status()).toBe(200);
+    expect(image.headers()["content-type"]).toBe("image/png");
+
+    const publicPage = await context.newPage();
+    await eventually(async () => {
+      await publicPage.goto("/about");
+      await expect(publicPage.locator(`img[src="${saved.profile_image_url}"]`)).toBeVisible({ timeout: 1_000 });
+    });
+
+    revalidation = waitForRevalidation(page);
+    await page.getByRole("button", { name: "Remove", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Remove photo" }).click();
+    await expect(toast(page, "Photo removed.")).toBeVisible();
+    expect((await revalidation).status()).toBe(200);
+    expect((await adminApi.get<Profile>("/admin/profile")).profile_image_url).toBeNull();
   });
 });

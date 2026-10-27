@@ -16,9 +16,11 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+// Only used for small labels, so it isn't preloaded ahead of the text and heading fonts.
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {

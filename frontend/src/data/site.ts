@@ -11,9 +11,9 @@ export const site = {
    * domain, e.g. "https://khizerhayat.dev".
    */
   url: "",
-  title: "Khizer Hayat — Software Engineer",
+  title: "Khizer Hayat — Software Engineer (AI/ML)",
   description:
-    "Portfolio of Khizer Hayat, a Software Engineering graduate building practical AI systems, backend services, and machine learning applications with Python, FastAPI, and Docker.",
+    "Khizer Hayat — Software Engineer focused on AI/ML and MLOps. Projects in computer vision, LLM applications, and Python backend services with FastAPI.",
   /** Theme used on a first visit, before a visitor picks one. */
   defaultTheme: "dark" as "dark" | "light",
   /**
@@ -23,13 +23,20 @@ export const site = {
   showEmptyCategories: true,
 };
 
-export const navigation = [
+/**
+ * Main navigation. Items with `requires` are only shown once that content exists,
+ * so visitors never land on an empty page from the menu (the routes still work).
+ */
+export const navigation: readonly NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Projects", href: "/projects" },
   { label: "Skills", href: "/skills" },
   { label: "Experience", href: "/experience" },
-  { label: "Certifications", href: "/certifications" },
+  { label: "Education", href: "/education" },
+  { label: "Certifications", href: "/certifications", requires: "certifications" },
   { label: "About", href: "/about" },
-  { label: "Writing", href: "/writing" },
+  { label: "Writing", href: "/writing", requires: "articles" },
   { label: "Contact", href: "/contact" },
-] as const;
+];
+
+export type NavItem = { label: string; href: string; requires?: "certifications" | "articles" };

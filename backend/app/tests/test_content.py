@@ -236,3 +236,71 @@ def test_technology_rename_and_merge_conflict(admin, category):
 
 def test_health(client):
     assert client.get("/health").json() == {"status": "ok", "database": "ok"}
+
+
+def _create_profile(admin):
+    response = admin.put("/api/v1/admin/profile", json={"display_name": "Khizer Hayat", "headline": "Engineer"})
+    assert response.status_code == 200, response.text
+
+
+JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 64
+
+
+def test_profile_photo_upload_serve_and_delete(admin, client):
+    _create_profile(admin)
+    response = admin.put("/api/v1/admin/profile/photo", content=JPEG, headers={"Content-Type": "image/jpeg"})
+    assert response.status_code == 200, response.text
+    url = response.json()["profile_image_url"]
+    assert url.startswith("/api/v1/profile/photo/")
+    assert client.get("/api/v1/profile").json()["profile_image_url"] == url
+
+    photo = client.get(url)
+    assert photo.status_code == 200 and photo.content == JPEG
+    assert photo.headers["content-type"] == "image/jpeg"
+    assert "immutable" in photo.headers["cache-control"]
+    # The bytes never appear in JSON responses.
+    assert "photo" not in client.get("/api/v1/profile").json()
+
+    # A save from the admin form keeps the uploaded photo's URL valid (it passes the path validator).
+    profile = admin.get("/api/v1/admin/profile").json()
+    body = {k: profile[k] for k in ("display_name", "headline", "profile_image_url")}
+    assert admin.put("/api/v1/admin/profile", json=body).status_code == 200
+
+    response = admin.delete("/api/v1/admin/profile/photo")
+    assert response.status_code == 200 and response.json()["profile_image_url"] is None
+    assert client.get(url).status_code == 404
+
+
+def test_profile_photo_rejects_wrong_or_oversized_files(admin):
+    _create_profile(admin)
+    cases = [
+        (b"<svg onload=alert(1)>", "image/svg+xml"),
+        (b"GIF89a" + b"\x00" * 10, "image/jpeg"),  # content doesn't match the declared type
+        (b"RIFF\x00\x00\x00\x00WAVE", "image/webp"),
+        (b"", "image/png"),
+        (b"\xff\xd8\xff" + b"\x00" * 1_600_000, "image/jpeg"),
+    ]
+    for data, content_type in cases:
+        response = admin.put("/api/v1/admin/profile/photo", content=data, headers={"Content-Type": content_type})
+        assert response.status_code == 422, (content_type, response.status_code)
+        assert response.json()["errors"][0]["field"] == "photo"
+
+
+def test_profile_nav_links_and_footer_text(admin, client):
+    payload = {
+        "display_name": "Khizer Hayat",
+        "headline": "Engineer",
+        "footer_text": "Building practical AI systems.",
+        "nav_links": [{"label": "Blog", "url": "https://blog.example.com"}, {"label": "Talks", "url": "/writing"}],
+    }
+    assert admin.put("/api/v1/admin/profile", json=payload).status_code == 200
+    profile = client.get("/api/v1/profile").json()
+    assert profile["footer_text"] == "Building practical AI systems."
+    assert [link["label"] for link in profile["nav_links"]] == ["Blog", "Talks"]
+
+    bad = admin.put(
+        "/api/v1/admin/profile", json={**payload, "nav_links": [{"label": "X", "url": "javascript:alert(1)"}]}
+    )
+    assert bad.status_code == 422
+    too_many = [{"label": f"L{i}", "url": "/projects"} for i in range(7)]
+    assert admin.put("/api/v1/admin/profile", json={**payload, "nav_links": too_many}).status_code == 422

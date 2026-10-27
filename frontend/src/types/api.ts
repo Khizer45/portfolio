@@ -67,6 +67,9 @@ export interface Profile {
   cv_url: string | null;
   profile_image_url: string | null;
   social_links: SocialLink[];
+  /** Extra menu links added in Admin → Profile: a "/path" on this site or a full URL. */
+  nav_links: SocialLink[];
+  footer_text: string;
   availability_open: boolean;
   availability_label: string;
   focus_areas: string[];

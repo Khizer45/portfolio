@@ -1,13 +1,12 @@
 import { Briefcase } from "lucide-react";
 import type { Metadata } from "next";
 
-import { EducationList } from "@/components/education-list";
 import { ArrowLink } from "@/components/ui/arrow-link";
 import { Tag } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
-import { PageHeader, SectionHeading } from "@/components/ui/page-header";
-import { getEducation, getExperience } from "@/lib/content";
+import { PageHeader } from "@/components/ui/page-header";
+import { getExperience } from "@/lib/content";
 import { formatDuration, formatRange } from "@/lib/format";
 import { employmentTypeLabel, workModeLabel } from "@/lib/labels";
 import type { Experience } from "@/types/api";
@@ -15,7 +14,7 @@ import type { Experience } from "@/types/api";
 export const metadata: Metadata = {
   title: "Experience",
   description:
-    "Professional experience, internships, and education of Khizer Hayat, Software Engineering graduate from MUST.",
+    "Internships and professional experience of Khizer Hayat, Software Engineer focused on AI/ML.",
   alternates: { canonical: "/experience" },
 };
 
@@ -30,19 +29,18 @@ function locationLine(item: Experience): string {
 }
 
 export default async function ExperiencePage() {
-  const [experience, education] = await Promise.all([getExperience(), getEducation()]);
+  const experience = await getExperience();
 
   return (
     <>
       <PageHeader
         eyebrow="Experience"
         title="Experience"
-        description="Professional experience in reverse-chronological order, followed by education."
+        description="Internships and professional roles, most recent first."
       />
 
       <Container className="py-12 sm:py-16">
-        <section aria-labelledby="work-heading">
-          <SectionHeading id="work-heading" title="Work experience" />
+        <section aria-label="Work experience">
           {experience.length > 0 ? (
             <ol className="relative space-y-8 before:absolute before:top-2 before:bottom-2 before:left-[0.3125rem] before:w-px before:bg-line sm:before:left-[11.96875rem]">
               {experience.map((item) => {
@@ -138,12 +136,6 @@ export default async function ExperiencePage() {
           )}
         </section>
 
-        {education.length > 0 && (
-          <section aria-labelledby="education-heading" className="mt-20">
-            <SectionHeading id="education-heading" title="Education" />
-            <EducationList items={education} />
-          </section>
-        )}
       </Container>
     </>
   );

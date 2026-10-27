@@ -1,13 +1,14 @@
 """Admin: dashboard, profile settings, technologies, and the activity log."""
 
+import hashlib
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Response, status
+from fastapi import APIRouter, Query, Request, Response, status
 from sqlalchemy import func, select
 
 from app.api.deps import Admin, DbSession, PageNumber
-from app.core.errors import ConflictError
+from app.core.errors import ConflictError, FieldValidationError, NotFoundError
 from app.models import (
     Achievement,
     Article,
@@ -91,7 +92,7 @@ def list_audit_logs(
 # Profile
 # --------------------------------------------------------------------------- #
 
-_PROFILE_TEXT_FIELDS = {"role", "intro", "biography", "location", "availability_label"}
+_PROFILE_TEXT_FIELDS = {"role", "intro", "biography", "location", "availability_label", "footer_text"}
 
 
 @router.get("/profile", response_model=ProfileRead | None, tags=["admin: profile"])
@@ -109,6 +110,63 @@ def update_profile(body: ProfileWrite, ctx: Admin, db: DbSession):
     for key, value in body.model_dump().items():
         setattr(profile, key, "" if value is None and key in _PROFILE_TEXT_FIELDS else value)
     audit.record(db, actor=ctx.user, action="update", entity_type="profile", label=body.display_name, ip=ctx.ip)
+    commit(db)
+    db.refresh(profile)
+    return profile
+
+
+# Accepted portrait formats and the bytes each file must start with. SVG is excluded on
+# purpose: it can carry scripts.
+_PHOTO_SIGNATURES = {"image/jpeg": (b"\xff\xd8\xff",), "image/png": (b"\x89PNG\r\n\x1a\n",), "image/webp": (b"RIFF",)}
+MAX_PHOTO_BYTES = 1_500_000
+PHOTO_URL_PREFIX = "/api/v1/profile/photo/"
+
+
+def _is_valid_photo(data: bytes, content_type: str) -> bool:
+    if not any(data.startswith(signature) for signature in _PHOTO_SIGNATURES[content_type]):
+        return False
+    return content_type != "image/webp" or data[8:12] == b"WEBP"
+
+
+@router.put("/profile/photo", response_model=ProfileRead, tags=["admin: profile"])
+async def upload_profile_photo(request: Request, ctx: Admin, db: DbSession):
+    """Upload the portrait as the raw request body (Content-Type image/jpeg, image/png or image/webp)."""
+    content_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
+    if content_type not in _PHOTO_SIGNATURES:
+        raise FieldValidationError("photo", "Upload a JPG, PNG, or WebP image.")
+    data = await request.body()
+    if not data:
+        raise FieldValidationError("photo", "The file is empty.")
+    if len(data) > MAX_PHOTO_BYTES:
+        raise FieldValidationError(
+            "photo", "The image is too large (max 1.5 MB). Export a smaller version and try again."
+        )
+    if not _is_valid_photo(data, content_type):
+        raise FieldValidationError("photo", "This file isn't a valid JPG, PNG, or WebP image.")
+
+    profile = db.scalar(select(ProfileSettings))
+    if profile is None:
+        raise NotFoundError("Save the profile once before adding a photo.")
+    profile.photo = data
+    profile.photo_type = content_type
+    # The URL changes with the content, so browsers and the CDN can cache each version forever.
+    profile.profile_image_url = PHOTO_URL_PREFIX + hashlib.sha256(data).hexdigest()[:16]
+    audit.record(db, actor=ctx.user, action="update", entity_type="profile", label="Profile photo", ip=ctx.ip)
+    commit(db)
+    db.refresh(profile)
+    return profile
+
+
+@router.delete("/profile/photo", response_model=ProfileRead, tags=["admin: profile"])
+def delete_profile_photo(ctx: Admin, db: DbSession):
+    profile = db.scalar(select(ProfileSettings))
+    if profile is None:
+        raise NotFoundError("Profile has not been set up yet.")
+    profile.photo = None
+    profile.photo_type = None
+    if (profile.profile_image_url or "").startswith(PHOTO_URL_PREFIX):
+        profile.profile_image_url = None
+    audit.record(db, actor=ctx.user, action="delete", entity_type="profile", label="Profile photo", ip=ctx.ip)
     commit(db)
     db.refresh(profile)
     return profile

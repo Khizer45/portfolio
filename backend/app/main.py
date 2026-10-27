@@ -25,6 +25,7 @@ logger = logging.getLogger("app")
 access_logger = logging.getLogger("app.access")
 
 _DOCS_PATHS = ("/docs", "/redoc", "/openapi.json")
+_PUBLIC_IMAGE_PATHS = ("/api/v1/profile/photo/",)
 # Largest legitimate bodies: an article (200,000 characters) or a full project case study.
 MAX_BODY_BYTES = 2 * 1024 * 1024
 MAX_LOGIN_BODY_BYTES = 16 * 1024
@@ -83,7 +84,10 @@ def _security_headers(response: Response, path: str, settings: Settings) -> None
         headers.setdefault("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
     if settings.is_production:
         headers.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
-    if path.startswith("/api/"):
+    if path.startswith(_PUBLIC_IMAGE_PATHS):
+        # Versioned public images set their own long-lived Cache-Control.
+        pass
+    elif path.startswith("/api/"):
         # Responses can carry session data; never let a CDN or browser cache them.
         # (Vercel caches proxied responses according to upstream Cache-Control.)
         headers["Cache-Control"] = "no-store"

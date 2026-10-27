@@ -2,10 +2,12 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query, Response
+from sqlalchemy import select
 
 from app.api.deps import DbSession, PageNumber
 from app.core.errors import NotFoundError
+from app.models import ProfileSettings
 from app.models.enums import ProjectStatus
 from app.repositories import public as repo
 from app.schemas.article import PublicArticle, PublicArticleSummary
@@ -26,6 +28,19 @@ def get_profile(db: DbSession):
     if profile is None:
         raise NotFoundError("Profile has not been set up yet.")
     return profile
+
+
+@router.get("/profile/photo/{version}", response_class=Response, responses={200: {"content": {"image/*": {}}}})
+def get_profile_photo(version: Annotated[str, Path(pattern="^[0-9a-f]{1,64}$")], db: DbSession):
+    """The uploaded portrait. `version` only busts caches; the current photo is always returned."""
+    row = db.execute(select(ProfileSettings.photo, ProfileSettings.photo_type)).first()
+    if row is None or not row.photo or not row.photo_type:
+        raise NotFoundError("No profile photo has been uploaded.")
+    return Response(
+        content=row.photo,
+        media_type=row.photo_type,
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
 
 
 @router.get("/projects", response_model=Page[ProjectPublicSummary])

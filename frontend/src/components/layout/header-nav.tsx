@@ -1,14 +1,19 @@
 "use client";
 
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import type { NavItem } from "@/data/site";
 import { cn } from "@/lib/format";
 
-type NavItem = { label: string; href: string };
+
+/** Custom menu links from the admin may point to another site; those open in a new tab. */
+function isExternal(href: string) {
+  return /^https?:\/\//.test(href);
+}
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
@@ -56,10 +61,10 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
       <nav aria-label="Main" className="hidden lg:block">
         <ul className="flex items-center gap-0.5">
           {items.map((item) => {
-            const active = isActive(pathname, item.href);
+            const active = !isExternal(item.href) && isActive(pathname, item.href);
             return (
               <li key={item.href}>
-                <Link
+                <NavLink
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
@@ -70,7 +75,7 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
                   )}
                 >
                   {item.label}
-                </Link>
+                </NavLink>
               </li>
             );
           })}
@@ -79,12 +84,6 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
 
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <Link
-          href="/contact"
-          className="hidden h-9 items-center gap-1.5 rounded-lg bg-accent-fill px-3.5 text-sm font-medium text-accent-fill-fg transition-colors hover:bg-accent-fill-hover lg:inline-flex"
-        >
-          Let&apos;s talk <ArrowUpRight className="size-4" aria-hidden="true" />
-        </Link>
         <button
           ref={buttonRef}
           type="button"
@@ -106,10 +105,10 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
         <nav aria-label="Main mobile" className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
           <ul className="flex flex-col">
             {items.map((item) => {
-              const active = isActive(pathname, item.href);
+              const active = !isExternal(item.href) && isActive(pathname, item.href);
               return (
                 <li key={item.href} className="border-b border-line last:border-0">
-                  <Link
+                  <NavLink
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     onClick={() => setOpen(false)}
@@ -122,8 +121,7 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
                     {/* Always rendered: the shared 404 page is prerendered without the visitor's URL, so the
                         active item can differ after hydration and must not change the element structure. */}
                     <span className={cn("size-1.5 rounded-full", active ? "bg-accent" : "invisible")} aria-hidden="true" />
-
-                  </Link>
+                  </NavLink>
                 </li>
               );
             })}
@@ -131,5 +129,21 @@ export function HeaderNav({ items }: { items: readonly NavItem[] }) {
         </nav>
       </div>
     </>
+  );
+}
+
+function NavLink({ href, children, ...rest }: React.ComponentProps<typeof Link> & { href: string }) {
+  if (!isExternal(href)) {
+    return (
+      <Link href={href} {...rest}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" {...(rest as React.AnchorHTMLAttributes<HTMLAnchorElement>)}>
+      {children}
+      <span className="sr-only"> (opens in a new tab)</span>
+    </a>
   );
 }

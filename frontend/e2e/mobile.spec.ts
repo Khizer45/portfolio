@@ -17,7 +17,10 @@ test.describe("public mobile menu", () => {
     const closeButton = page.getByRole("button", { name: "Close menu" });
     await expect(closeButton).toHaveAttribute("aria-expanded", "true");
     await expect(mobileNav).toBeVisible();
-    await expect(mobileNav.getByRole("link")).toHaveCount(8);
+    // Same items as the (hidden) desktop menu; empty sections are left out of both.
+    const desktopLinks = await page.locator('nav[aria-label="Main"] a').count();
+    expect(desktopLinks).toBeGreaterThanOrEqual(6);
+    await expect(mobileNav.getByRole("link")).toHaveCount(desktopLinks);
 
     await closeButton.click();
     await expect(mobileNav).toBeHidden();

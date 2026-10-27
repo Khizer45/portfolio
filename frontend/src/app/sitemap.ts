@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getCategories, getProjects, getPublishedArticles } from "@/lib/content";
+import { getCategories, getNavigation, getProjects, getPublishedArticles } from "@/lib/content";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 300;
@@ -8,12 +8,14 @@ export const revalidate = 300;
 /** Public pages only. The admin dashboard (/admin) is never listed. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
-  const pages = ["", "/projects", "/skills", "/experience", "/certifications", "/about", "/writing", "/contact"];
-  const [projects, categories, articles] = await Promise.all([
+  const [navigation, projects, categories, articles] = await Promise.all([
+    getNavigation(),
     getProjects(),
     getCategories(),
     getPublishedArticles(),
   ]);
+  // The same pages as the menu, so sections with nothing to show yet aren't indexed.
+  const pages = navigation.map((item) => (item.href === "/" ? "" : item.href));
 
   return [
     ...pages.map((path) => ({
