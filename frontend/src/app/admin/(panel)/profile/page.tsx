@@ -73,13 +73,37 @@ const SECTIONS: FormSection[] = [
     title: "Availability",
     fields: [
       { name: "availability_open", label: "Show the availability badge", type: "checkbox", wide: true },
-      { name: "availability_label", label: "Availability text", type: "text", maxLength: 150, wide: true, placeholder: "Open to entry-level software and AI engineering roles" },
+      { name: "availability_label", label: "Availability text", type: "text", maxLength: 150, wide: true, placeholder: "Open to work", help: "The badge at the top of the home page card." },
+      { name: "availability_heading", label: "Card heading", type: "text", maxLength: 120, wide: true, placeholder: "Let's talk about AI engineering roles.", help: "Leave empty to show \"Let's work together.\"" },
+      { name: "availability_note", label: "Card text", type: "textarea", rows: 3, maxLength: 400, wide: true, placeholder: "I'm looking for … roles. Email or WhatsApp is the quickest way to reach me." },
+      { name: "work_preference", label: "Work preference", type: "text", maxLength: 120, placeholder: "On-site in Pakistan or remote", help: "Shown in the card with your location. Leave empty to hide." },
+      { name: "timezone", label: "Time zone", type: "text", maxLength: 60, placeholder: "Pakistan time (UTC+5)", help: "Leave empty to hide." },
+    ],
+  },
+  {
+    title: "Currently building",
+    fields: [
+      {
+        name: "currently_building",
+        label: "Currently building",
+        type: "repeater",
+        itemLabel: "Item",
+        titleField: "title",
+        maxItems: 6,
+        wide: true,
+        help: "Listed on the home page under the availability card. Leave the list empty to show your in-progress projects automatically.",
+        fields: [
+          { name: "title", label: "Title", type: "text", required: true, maxLength: 80, placeholder: "Local AI Lab" },
+          { name: "description", label: "Short description", type: "text", maxLength: 160, placeholder: "AI model benchmarking platform" },
+          { name: "url", label: "Link", type: "link", placeholder: "/projects/local-ai-lab or https://…", help: "Optional." },
+        ],
+      },
     ],
   },
   {
     title: "About page",
     fields: [
-      { name: "focus_areas", label: "Focus areas", type: "tags", help: "Shown in the home page \"At a glance\" panel." },
+      { name: "focus_areas", label: "Focus areas", type: "tags", help: "Not currently shown on the public site." },
       { name: "career_interests", label: "Roles I'm pursuing", type: "tags" },
       { name: "spoken_languages", label: "Spoken languages", type: "tags" },
       { name: "interests", label: "What I'm interested in", type: "lines" },

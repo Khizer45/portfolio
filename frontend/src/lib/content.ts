@@ -45,6 +45,11 @@ export const FALLBACK_PROFILE: Profile = {
   footer_text: "",
   availability_open: false,
   availability_label: "",
+  availability_heading: "",
+  availability_note: "",
+  work_preference: "",
+  timezone: "",
+  currently_building: [],
   focus_areas: [],
   spoken_languages: [],
   career_interests: [],
@@ -57,7 +62,9 @@ export const FALLBACK_PROFILE: Profile = {
 const EMPTY_PAGE = { items: [], total: 0, page: 1, page_size: 100, pages: 1 };
 
 export async function getProfile(): Promise<Profile> {
-  return (await apiGetOrNull<Profile>("/profile")) ?? FALLBACK_PROFILE;
+  const profile = await apiGetOrNull<Profile>("/profile");
+  // Defaults first, so fields an older backend doesn't send yet (mid-deploy) are never undefined.
+  return profile ? { ...FALLBACK_PROFILE, ...profile } : FALLBACK_PROFILE;
 }
 
 /** Biography text split into paragraphs (separated by blank lines). */

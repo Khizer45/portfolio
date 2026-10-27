@@ -8,7 +8,7 @@ import type { Profile } from "@/types/api";
 
 type ProfileLink = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; external: boolean };
 
-function isWhatsApp(url: string) {
+export function isWhatsApp(url: string) {
   return /^https?:\/\/(wa\.me|(api\.|web\.)?whatsapp\.com)\//i.test(url);
 }
 

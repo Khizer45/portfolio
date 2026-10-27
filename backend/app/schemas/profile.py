@@ -29,6 +29,14 @@ class NavLink(Schema):
     url: LinkOrPath
 
 
+class BuildingItem(Schema):
+    """An entry in the home page "Currently building" list."""
+
+    title: text(80)
+    description: optional_text(160) = None
+    url: OptionalLinkOrPath = None
+
+
 class ProfileWrite(Schema):
     display_name: text(100)
     role: optional_text(150) = None
@@ -46,6 +54,11 @@ class ProfileWrite(Schema):
     footer_text: optional_text(300) = None
     availability_open: bool = True
     availability_label: optional_text(150) = None
+    availability_heading: optional_text(120) = None
+    availability_note: optional_text(400) = None
+    work_preference: optional_text(120) = None
+    timezone: optional_text(60) = None
+    currently_building: Annotated[list[BuildingItem], Field(max_length=6)] = []
     focus_areas: TagList = []
     spoken_languages: TagList = []
     career_interests: TagList = []
@@ -76,6 +89,11 @@ class ProfileRead(ReadSchema):
     footer_text: str
     availability_open: bool
     availability_label: str
+    availability_heading: str
+    availability_note: str
+    work_preference: str
+    timezone: str
+    currently_building: list[BuildingItem]
     focus_areas: list[str]
     spoken_languages: list[str]
     career_interests: list[str]

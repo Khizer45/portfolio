@@ -92,7 +92,18 @@ def list_audit_logs(
 # Profile
 # --------------------------------------------------------------------------- #
 
-_PROFILE_TEXT_FIELDS = {"role", "intro", "biography", "location", "availability_label", "footer_text"}
+_PROFILE_TEXT_FIELDS = {
+    "role",
+    "intro",
+    "biography",
+    "location",
+    "availability_label",
+    "availability_heading",
+    "availability_note",
+    "work_preference",
+    "timezone",
+    "footer_text",
+}
 
 
 @router.get("/profile", response_model=ProfileRead | None, tags=["admin: profile"])

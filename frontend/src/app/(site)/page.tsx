@@ -1,11 +1,13 @@
-import { ArrowRight, ArrowUpRight, BadgeCheck, FolderOpen, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, BriefcaseBusiness, Clock, FolderOpen, Mail, MapPin } from "lucide-react";
 import Link from "next/link";
 
+import { isWhatsApp } from "@/components/layout/site-footer";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { ProjectGrid } from "@/components/projects/project-card";
 import { ArrowLink } from "@/components/ui/arrow-link";
 import { Tag } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
+import { WhatsAppIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-header";
@@ -39,21 +41,28 @@ export default async function HomePage() {
   ]);
 
   const featured = projects.filter((p) => p.is_featured);
-  const building = projects.filter((p) => p.status === "in_progress");
+  // Set in Admin → Profile; until then, the projects marked "in progress".
+  const building =
+    profile.currently_building.length > 0
+      ? profile.currently_building
+      : projects
+          .filter((p) => p.status === "in_progress")
+          .map((p) => ({ title: p.title, description: p.subtitle, url: `/projects/${p.slug}` }));
   const experience = allExperience.slice(0, 2);
   const certifications = allCertifications.slice(0, 3);
   const technologyUse = new Map<string, number>();
   for (const tech of projects.flatMap((p) => p.technologies)) technologyUse.set(tech, (technologyUse.get(tech) ?? 0) + 1);
-  const technologyCount = technologyUse.size;
   // Ordered by how many published projects use each technology; ties keep project order.
   const topTechnologies = [...technologyUse.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8)
     .map(([tech]) => tech);
-  const stats = [
-    { label: "Projects", value: projects.length },
-    { label: "Technologies", value: technologyCount },
-  ].filter((stat) => stat.value > 0);
+  const whatsapp = profile.social_links.find((link) => isWhatsApp(link.url));
+  const details = [
+    { icon: BriefcaseBusiness, text: profile.work_preference },
+    { icon: MapPin, text: profile.location },
+    { icon: Clock, text: profile.timezone },
+  ].filter((detail) => detail.text);
   // "Software Engineer · AI/ML Engineer" → separate items, so a long role wraps between titles, not inside one.
   const roles = profile.role.split(/\s*[·•|]\s*/).filter(Boolean);
 
@@ -69,18 +78,9 @@ export default async function HomePage() {
         />
         <Container className="relative grid grid-cols-1 gap-10 pt-10 pb-14 sm:gap-12 sm:pt-20 sm:pb-24 lg:grid-cols-12 lg:gap-10 lg:pt-24">
           <div className="lg:col-span-7">
-            {profile.availability_open && profile.availability_label && (
-              <p className="animate-enter inline-flex items-center gap-2.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-fg-muted">
-                <span aria-hidden="true" className="relative flex size-2">
-                  <span className="animate-ping-soft absolute inset-0 rounded-full bg-accent-fill" />
-                  <span className="relative size-2 rounded-full bg-accent-fill" />
-                </span>
-                {profile.availability_label}
-              </p>
-            )}
             {profile.profile_image_url && (
               // Not faded in: it is above the fold. Set in Admin → Profile, so next/image is not used.
-              <div className="mt-8 flex w-fit rounded-full bg-linear-to-b from-accent/70 via-accent-line to-transparent p-[3px] sm:mt-10">
+              <div className="mb-8 flex w-fit rounded-full bg-linear-to-b from-accent/70 via-accent-line to-transparent p-[3px] sm:mt-10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={profile.profile_image_url}
@@ -96,7 +96,7 @@ export default async function HomePage() {
             {roles.length > 0 && (
               <ul
                 aria-label="Roles"
-                className="animate-enter mt-7 flex flex-wrap gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-accent uppercase sm:mt-8 sm:text-xs"
+                className="animate-enter flex flex-wrap gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-accent uppercase sm:text-xs"
                 style={delay(60)}
               >
                 {roles.map((role) => (
@@ -146,59 +146,111 @@ export default async function HomePage() {
             )}
           </div>
 
-          {/* At a glance: built only from real profile and project data */}
-          <aside aria-labelledby="glance-heading" className="lg:col-span-5 lg:self-center">
-            <h2 id="glance-heading" className="sr-only">
-              At a glance
-            </h2>
-            <div className="grid grid-cols-1 gap-3">
-              {(stats.length > 0 || profile.location) && (
-                <div className={`${tileClasses} animate-enter`} style={delay(160)}>
-                  {stats.length > 0 && (
-                    <dl className="grid grid-cols-2 divide-x divide-line">
-                      {stats.map((stat) => (
-                        <div key={stat.label} className="px-1 first:pr-5 last:pl-5">
-                          <dt className={tileLabelClasses}>{stat.label}</dt>
-                          <dd className="mt-3 font-display text-4xl font-semibold tracking-tight">{stat.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  )}
-                  {profile.location && (
-                    <p
-                      className={`flex items-center gap-2 text-sm text-fg-muted ${stats.length > 0 ? "mt-5 border-t border-line pt-4" : ""}`}
-                    >
-                      <MapPin className="size-4 shrink-0 text-accent" aria-hidden="true" />
-                      Based in {profile.location}
-                    </p>
-                  )}
-                </div>
-              )}
-              {building.length > 0 && (
-                <div className={`${tileClasses} animate-enter`} style={delay(220)}>
-                  <p className={tileLabelClasses}>Currently building</p>
-                  <ul className="mt-3 space-y-0.5">
-                    {building.map((project) => (
-                      <li key={project.slug}>
-                        <Link
-                          href={`/projects/${project.slug}`}
-                          className="group -mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-muted"
-                        >
-                          <span className="min-w-0 truncate text-sm">
-                            <span className="font-medium text-fg">{project.title}</span>
-                            {project.subtitle && <span className="text-fg-subtle"> — {project.subtitle}</span>}
-                          </span>
-                          <ArrowUpRight
-                            className="size-4 shrink-0 text-fg-subtle transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
-                            aria-hidden="true"
-                          />
-                        </Link>
+          <aside aria-label="Availability" className="grid grid-cols-1 gap-3 lg:col-span-5 lg:self-center">
+            {/* Open-to-work card: everything in it is set in Admin → Profile → Availability. */}
+            <div
+              className="animate-enter relative overflow-hidden rounded-2xl border border-line bg-surface p-6 sm:p-7"
+              style={delay(160)}
+            >
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 bg-linear-to-br from-accent-soft via-transparent to-transparent"
+              />
+              <div className="relative">
+                {profile.availability_open && profile.availability_label && (
+                  <p className="inline-flex items-center gap-2 rounded-full border border-accent-line bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+                    <span aria-hidden="true" className="relative flex size-2">
+                      <span className="animate-ping-soft absolute inset-0 rounded-full bg-accent-fill" />
+                      <span className="relative size-2 rounded-full bg-accent-fill" />
+                    </span>
+                    {profile.availability_label}
+                  </p>
+                )}
+                <h2 className="mt-5 font-display text-2xl leading-tight font-semibold tracking-tight text-balance sm:text-[1.75rem]">
+                  {profile.availability_heading || "Let's work together."}
+                </h2>
+                {profile.availability_note && (
+                  <p className="mt-3 text-[0.9375rem] leading-relaxed text-pretty text-fg-muted">
+                    {profile.availability_note}
+                  </p>
+                )}
+                {details.length > 0 && (
+                  <ul className="mt-6 space-y-3 text-sm text-fg-muted">
+                    {details.map(({ icon: Icon, text }) => (
+                      <li key={text} className="flex items-start gap-3">
+                        <Icon className="mt-0.5 size-4 shrink-0 text-fg-subtle" aria-hidden="true" />
+                        {text}
                       </li>
                     ))}
                   </ul>
-                </div>
-              )}
+                )}
+                {(profile.contact_email || whatsapp) && (
+                  <div className="mt-7 flex flex-wrap gap-3">
+                    {profile.contact_email && (
+                      <ButtonLink href={`mailto:${profile.contact_email}`} className="flex-1 sm:flex-none">
+                        <Mail aria-hidden="true" />
+                        Email me
+                      </ButtonLink>
+                    )}
+                    {whatsapp && (
+                      <ButtonLink href={whatsapp.url} external variant="secondary" className="flex-1 sm:flex-none">
+                        <WhatsAppIcon aria-hidden="true" />
+                        WhatsApp
+                        <span className="sr-only">(opens in a new tab)</span>
+                      </ButtonLink>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {building.length > 0 && (
+              <div className={`${tileClasses} animate-enter`} style={delay(220)}>
+                <h2 className={tileLabelClasses}>Currently building</h2>
+                <ul className="mt-3 space-y-0.5">
+                  {building.map((item) => {
+                    const label = (
+                      <span className="min-w-0 truncate text-sm">
+                        <span className="font-medium text-fg">{item.title}</span>
+                        {item.description && <span className="text-fg-subtle"> — {item.description}</span>}
+                      </span>
+                    );
+                    const rowClasses = "-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-1.5";
+                    if (!item.url) {
+                      return (
+                        <li key={item.title} className={rowClasses}>
+                          {label}
+                        </li>
+                      );
+                    }
+                    const external = /^https?:\/\//.test(item.url);
+                    const linkClasses = `group ${rowClasses} transition-colors hover:bg-surface-muted`;
+                    const arrow = (
+                      <ArrowUpRight
+                        className="size-4 shrink-0 text-fg-subtle transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-accent"
+                        aria-hidden="true"
+                      />
+                    );
+                    return (
+                      <li key={item.title}>
+                        {external ? (
+                          <a href={item.url} target="_blank" rel="noopener noreferrer" className={linkClasses}>
+                            {label}
+                            <span className="sr-only">(opens in a new tab)</span>
+                            {arrow}
+                          </a>
+                        ) : (
+                          <Link href={item.url} className={linkClasses}>
+                            {label}
+                            {arrow}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </aside>
         </Container>
       </section>

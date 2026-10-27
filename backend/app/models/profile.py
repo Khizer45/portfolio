@@ -38,6 +38,16 @@ class ProfileSettings(UUIDPrimaryKey, Timestamps, Base):
 
     availability_open: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     availability_label: Mapped[str] = mapped_column(String(150), nullable=False, default="")
+    # The home page "open to work" card: a heading, a short note, and optional details.
+    availability_heading: Mapped[str] = mapped_column(String(120), nullable=False, default="", server_default="")
+    availability_note: Mapped[str] = mapped_column(String(400), nullable=False, default="", server_default="")
+    work_preference: Mapped[str] = mapped_column(String(120), nullable=False, default="", server_default="")
+    timezone: Mapped[str] = mapped_column(String(60), nullable=False, default="", server_default="")
+    # Home page "Currently building" list: [{"title": "...", "description": "...", "url": "/projects/..."}].
+    # When empty, in-progress projects are shown instead.
+    currently_building: Mapped[list[dict]] = mapped_column(
+        JSONB, nullable=False, default=list, server_default=text("'[]'")
+    )
 
     focus_areas: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False, default=list, server_default="{}")
     spoken_languages: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False, default=list, server_default="{}")

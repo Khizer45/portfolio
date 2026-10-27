@@ -290,6 +290,44 @@ test.describe("profile", () => {
     expect(withoutTimestamp(after)).toEqual(withoutTimestamp(saved));
   });
 
+  test("add a 'Currently building' item, see it on the home page, then remove it", async ({ page, context, adminApi }) => {
+    original = await adminApi.get<Profile>("/admin/profile");
+    const title = `${TEST_PREFIX} building ${Date.now()}`;
+    const publicPage = await context.newPage();
+    const building = () => publicPage.getByRole("heading", { name: "Currently building" }).locator("..");
+
+    await page.goto("/admin/profile");
+    const group = page.getByRole("group", { name: "Currently building" });
+    await group.getByRole("button", { name: "Add item" }).click();
+    await group.getByRole("textbox", { name: "Title" }).last().fill(title);
+    await group.getByRole("textbox", { name: "Short description" }).last().fill("Test entry");
+    await group.getByRole("textbox", { name: "Link" }).last().fill("/projects");
+    let revalidation = waitForRevalidation(page);
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(toast(page, "Profile saved.")).toBeVisible();
+    expect((await revalidation).status()).toBe(200);
+
+    await eventually(async () => {
+      await publicPage.goto("/");
+      await expect(building().getByRole("link", { name: new RegExp(title) })).toHaveAttribute("href", "/projects", {
+        timeout: 1_000,
+      });
+    });
+
+    // Remove it again; the original list (or the in-progress projects) comes back.
+    const items = await group.getByRole("button", { name: /^Remove Item \d+$/ }).count();
+    await group.getByRole("button", { name: `Remove Item ${items}` }).click();
+    revalidation = waitForRevalidation(page);
+    await page.getByRole("button", { name: "Save profile" }).click();
+    await expect(toast(page, "Profile saved.")).toBeVisible();
+    expect((await revalidation).status()).toBe(200);
+    await eventually(async () => {
+      await publicPage.goto("/");
+      await expect(publicPage.getByText(title)).toHaveCount(0, { timeout: 1_000 });
+    });
+    expect(withoutTimestamp(await adminApi.get<Profile>("/admin/profile"))).toEqual(withoutTimestamp(original!));
+  });
+
   test("upload a profile photo, see it on /about, then remove it", async ({ page, context, adminApi }) => {
     const before = await adminApi.get<Profile>("/admin/profile");
     // Removing restores "no photo", so only run when there is none to lose.

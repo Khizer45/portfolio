@@ -54,6 +54,14 @@ export interface SocialLink {
   url: string;
 }
 
+/** An entry in the home page "Currently building" list (Admin → Profile). */
+export interface BuildingItem {
+  title: string;
+  description: string | null;
+  /** A page on this site ("/projects/…") or a full URL. */
+  url: string | null;
+}
+
 export interface Profile {
   display_name: string;
   role: string;
@@ -72,6 +80,13 @@ export interface Profile {
   footer_text: string;
   availability_open: boolean;
   availability_label: string;
+  /** The home page "open to work" card. */
+  availability_heading: string;
+  availability_note: string;
+  work_preference: string;
+  timezone: string;
+  /** When empty, the home page lists in-progress projects instead. */
+  currently_building: BuildingItem[];
   focus_areas: string[];
   spoken_languages: string[];
   career_interests: string[];

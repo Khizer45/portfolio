@@ -304,3 +304,42 @@ def test_profile_nav_links_and_footer_text(admin, client):
     assert bad.status_code == 422
     too_many = [{"label": f"L{i}", "url": "/projects"} for i in range(7)]
     assert admin.put("/api/v1/admin/profile", json={**payload, "nav_links": too_many}).status_code == 422
+
+
+def test_profile_availability_card_and_currently_building(admin, client):
+    payload = {
+        "display_name": "Khizer Hayat",
+        "headline": "Engineer",
+        "availability_heading": "Let's talk about AI engineering roles.",
+        "availability_note": "Email is the quickest way to reach me.",
+        "work_preference": "Remote or on-site",
+        "timezone": "Pakistan time (UTC+5)",
+        "currently_building": [
+            {"title": "Local AI Lab", "description": "Model benchmarking", "url": "/projects/local-ai-lab"},
+            {"title": "Side project"},
+        ],
+    }
+    assert admin.put("/api/v1/admin/profile", json=payload).status_code == 200
+    profile = client.get("/api/v1/profile").json()
+    assert profile["availability_heading"] == "Let's talk about AI engineering roles."
+    assert profile["work_preference"] == "Remote or on-site"
+    assert profile["timezone"] == "Pakistan time (UTC+5)"
+    assert profile["currently_building"] == [
+        {"title": "Local AI Lab", "description": "Model benchmarking", "url": "/projects/local-ai-lab"},
+        {"title": "Side project", "description": None, "url": None},
+    ]
+
+    # Leaving the fields out clears them rather than failing.
+    assert (
+        admin.put("/api/v1/admin/profile", json={"display_name": "Khizer Hayat", "headline": "Engineer"}).status_code
+        == 200
+    )
+    profile = client.get("/api/v1/profile").json()
+    assert profile["availability_heading"] == "" and profile["currently_building"] == []
+
+    bad_link = {**payload, "currently_building": [{"title": "X", "url": "javascript:alert(1)"}]}
+    assert admin.put("/api/v1/admin/profile", json=bad_link).status_code == 422
+    too_many = {**payload, "currently_building": [{"title": f"P{i}"} for i in range(7)]}
+    assert admin.put("/api/v1/admin/profile", json=too_many).status_code == 422
+    untitled = {**payload, "currently_building": [{"title": " "}]}
+    assert admin.put("/api/v1/admin/profile", json=untitled).status_code == 422
