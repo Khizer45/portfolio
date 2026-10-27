@@ -1,7 +1,6 @@
 import { ArrowRight, ArrowUpRight, BadgeCheck, FolderOpen, GraduationCap, MapPin } from "lucide-react";
 import Link from "next/link";
 
-import { CvButton } from "@/components/cv-button";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { ProjectGrid } from "@/components/projects/project-card";
 import { ArrowLink } from "@/components/ui/arrow-link";
@@ -12,7 +11,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeading } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
 import {
-  cvLink,
   getCertifications,
   getExperience,
   getPrimaryEducation,
@@ -57,6 +55,8 @@ export default async function HomePage() {
     { label: "Technologies", value: technologyCount },
   ].filter((stat) => stat.value > 0);
   const glanceFooter = [profile.location, profile.spoken_languages.join(", ")].filter(Boolean).join(" · ");
+  // "Software Engineer · AI/ML Engineer" → separate items, so a long role wraps between titles, not inside one.
+  const roles = profile.role.split(/\s*[·•|]\s*/).filter(Boolean);
 
   return (
     <>
@@ -68,7 +68,7 @@ export default async function HomePage() {
           aria-hidden="true"
           className="bg-dots pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_60%_55%_at_20%_10%,black,transparent)]"
         />
-        <Container className="relative grid gap-12 pt-14 pb-16 sm:pt-20 sm:pb-24 lg:grid-cols-12 lg:gap-10 lg:pt-24">
+        <Container className="relative grid gap-10 pt-10 pb-14 sm:gap-12 sm:pt-20 sm:pb-24 lg:grid-cols-12 lg:gap-10 lg:pt-24">
           <div className="lg:col-span-7">
             {profile.availability_open && profile.availability_label && (
               <p className="animate-enter inline-flex items-center gap-2.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-fg-muted">
@@ -79,42 +79,47 @@ export default async function HomePage() {
                 {profile.availability_label}
               </p>
             )}
-            {profile.role && (
-              <p
-                className="animate-enter mt-10 font-mono text-sm tracking-[0.08em] text-accent uppercase"
+            {roles.length > 0 && (
+              <ul
+                aria-label="Roles"
+                className="animate-enter mt-7 flex flex-wrap gap-2 font-mono text-[0.6875rem] tracking-[0.08em] text-accent uppercase sm:mt-10 sm:text-xs"
                 style={delay(60)}
               >
-                {profile.role}
-              </p>
+                {roles.map((role) => (
+                  <li
+                    key={role}
+                    className="rounded-md border border-accent-line bg-accent-soft px-2 py-1 whitespace-nowrap sm:px-2.5"
+                  >
+                    {role}
+                  </li>
+                ))}
+              </ul>
             )}
             <h1
               id="hero-heading"
-              className="mt-4 text-[3.25rem] leading-[0.95] font-semibold tracking-[-0.04em] sm:text-7xl lg:text-[5.25rem]"
+              className="mt-5 text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-7xl lg:text-[5.25rem]"
             >
               {profile.display_name}
             </h1>
-            <p
-              className="mt-7 max-w-2xl text-xl leading-snug text-balance text-fg sm:text-2xl"
-            >
+            <p className="mt-6 max-w-2xl text-lg leading-snug text-balance text-fg sm:mt-7 sm:text-2xl">
               {profile.headline}
             </p>
             {profile.intro && (
-              <p className="animate-enter mt-5 max-w-xl leading-relaxed text-pretty text-fg-muted" style={delay(220)}>
+              <p
+                className="animate-enter mt-4 max-w-xl text-[0.9375rem] leading-relaxed text-pretty text-fg-muted sm:mt-5 sm:text-base"
+                style={delay(220)}
+              >
                 {profile.intro}
               </p>
             )}
-            <div className="animate-enter mt-9 flex flex-wrap gap-3" style={delay(260)}>
-              <ButtonLink href="/projects">
+            <div className="animate-enter mt-8 sm:mt-9" style={delay(260)}>
+              <ButtonLink href="/projects" className="w-full sm:w-auto">
                 View projects
                 <ArrowRight aria-hidden="true" className="group-hover/button:translate-x-0.5" />
               </ButtonLink>
-              <CvButton url={cvLink(profile)} name={profile.display_name} />
-              <ButtonLink href="/contact" variant="secondary">
-                Contact me
-              </ButtonLink>
             </div>
             {topTechnologies.length > 0 && (
-              <div className="animate-enter mt-10" style={delay(300)}>
+              <div className="animate-enter mt-9 sm:mt-10" style={delay(300)}>
                 <p className={tileLabelClasses}>Most used in my projects</p>
                 <ul className="mt-3 flex flex-wrap gap-2" aria-label="Most used technologies">
                   {topTechnologies.map((tech) => (
@@ -364,7 +369,6 @@ export default async function HomePage() {
           </Container>
         </section>
       )}
-
     </>
   );
 }

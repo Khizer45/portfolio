@@ -72,15 +72,7 @@ export function SocialLinks({
   );
 }
 
-export function SiteFooter({
-  profile,
-  cvUrl,
-  items,
-}: {
-  profile: Profile;
-  cvUrl: string | null;
-  items: readonly NavItem[];
-}) {
+export function SiteFooter({ profile, items }: { profile: Profile; items: readonly NavItem[] }) {
   const year = new Date().getFullYear();
   const links = items.filter((item) => item.href !== "/");
   return (
@@ -114,18 +106,6 @@ export function SiteFooter({
                 )}
               </li>
             ))}
-            {cvUrl && (
-              <li>
-                <a
-                  href={cvUrl}
-                  className="inline-block py-1 text-fg-muted transition-colors hover:text-fg"
-                  // Same rule as the CV button: a local PDF downloads, an external link opens in a new tab.
-                  {...(cvUrl.startsWith("/") ? { download: "" } : { target: "_blank", rel: "noopener noreferrer" })}
-                >
-                  Download CV
-                </a>
-              </li>
-            )}
           </ul>
         </nav>
       </Container>

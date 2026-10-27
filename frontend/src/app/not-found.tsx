@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { navigation as allNavigation } from "@/data/site";
-import { cvLink, FALLBACK_PROFILE, getNavigation, getProfile } from "@/lib/content";
+import { FALLBACK_PROFILE, getNavigation, getProfile } from "@/lib/content";
 import type { Profile } from "@/types/api";
 
 export const metadata: Metadata = {
@@ -19,16 +19,15 @@ const suggestions = [
   { href: "/projects", label: "Projects", description: "Case studies and work in progress" },
   { href: "/skills", label: "Skills", description: "Languages, frameworks, and tools" },
   { href: "/experience", label: "Experience", description: "Internships and work history" },
-  { href: "/contact", label: "Contact", description: "Email, LinkedIn, and GitHub" },
+  { href: "/contact", label: "Contact", description: "Send a message or find my profiles" },
 ];
 
 /** The 404 page must always render, even when the API is unreachable. */
-async function loadProfile(): Promise<{ profile: Profile; cvUrl: string | null }> {
+async function loadProfile(): Promise<Profile> {
   try {
-    const profile = await getProfile();
-    return { profile, cvUrl: cvLink(profile) };
+    return await getProfile();
   } catch {
-    return { profile: FALLBACK_PROFILE, cvUrl: null };
+    return FALLBACK_PROFILE;
   }
 }
 
@@ -37,7 +36,7 @@ async function loadProfile(): Promise<{ profile: Profile; cvUrl: string | null }
  * app), so it adds the public header and footer itself.
  */
 export default async function NotFound() {
-  const { profile, cvUrl } = await loadProfile();
+  const profile = await loadProfile();
   const navigation = await getNavigation(profile).catch(() => allNavigation);
 
   return (
@@ -76,7 +75,7 @@ export default async function NotFound() {
           </div>
         </Container>
       </main>
-      <SiteFooter profile={profile} cvUrl={cvUrl} items={navigation} />
+      <SiteFooter profile={profile} items={navigation} />
     </>
   );
 }

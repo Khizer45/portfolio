@@ -1,7 +1,7 @@
 import { BackToTop } from "@/components/back-to-top";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { cvLink, getNavigation, getProfile } from "@/lib/content";
+import { getNavigation, getProfile } from "@/lib/content";
 
 /** Public site chrome: header, main content, footer. The admin area has its own layout. */
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
@@ -13,7 +13,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
       <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
-      <SiteFooter profile={profile} cvUrl={cvLink(profile)} items={navigation} />
+      <SiteFooter profile={profile} items={navigation} />
       <BackToTop />
     </>
   );

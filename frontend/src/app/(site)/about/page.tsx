@@ -73,33 +73,36 @@ export default async function AboutPage() {
                 <BulletList items={profile.seeking} />
               </section>
             )}
-
           </div>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start" aria-label="Profile summary">
-            <div className="rounded-2xl border border-line bg-surface p-6">
-              {profile.profile_image_url ? (
-                // The image URL is set in the admin dashboard and may be on any host, so next/image is not used.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={profile.profile_image_url}
-                  alt={`Portrait of ${profile.display_name}`}
-                  width={320}
-                  height={320}
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  className="aspect-square w-full rounded-xl border border-line bg-surface-muted object-cover object-top"
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="grid size-16 place-items-center rounded-2xl border border-accent-line bg-accent-soft font-mono text-lg font-semibold text-accent"
-                >
-                  {initials(profile.display_name)}
-                </span>
-              )}
-              <p className="mt-5 text-lg font-semibold">{profile.display_name}</p>
-              {profile.role && <p className="text-sm text-fg-muted">{profile.role}</p>}
+          <aside className="order-first lg:sticky lg:top-24 lg:order-none lg:self-start" aria-label="Profile summary">
+            <div className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+              <div className="flex items-center gap-4 lg:block">
+                {profile.profile_image_url ? (
+                  // The image URL is set in the admin dashboard and may be on any host, so next/image is not used.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profile.profile_image_url}
+                    alt={`Portrait of ${profile.display_name}`}
+                    width={320}
+                    height={320}
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="size-20 shrink-0 rounded-xl border border-line bg-surface-muted object-cover object-top sm:size-24 lg:aspect-square lg:size-auto lg:w-full"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="grid size-16 shrink-0 place-items-center rounded-2xl border border-accent-line bg-accent-soft font-mono text-lg font-semibold text-accent"
+                  >
+                    {initials(profile.display_name)}
+                  </span>
+                )}
+                <div className="min-w-0 lg:mt-5">
+                  <p className="text-lg font-semibold">{profile.display_name}</p>
+                  {profile.role && <p className="text-sm text-fg-muted">{profile.role}</p>}
+                </div>
+              </div>
 
               {(profile.location || profile.spoken_languages.length > 0) && (
                 <dl className="mt-6 space-y-4 border-t border-line pt-6 text-sm">

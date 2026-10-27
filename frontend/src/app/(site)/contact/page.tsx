@@ -2,12 +2,11 @@ import { MapPin } from "lucide-react";
 import type { Metadata } from "next";
 
 import { ContactForm } from "@/components/contact-form";
-import { CvButton } from "@/components/cv-button";
 import { profileLinks, SocialLinks } from "@/components/layout/site-footer";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
-import { cvLink, getProfile } from "@/lib/content";
+import { getProfile } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -41,15 +40,12 @@ export default async function ContactPage() {
                 <SocialLinks profile={profile} size="lg" className="mt-4 flex flex-wrap items-center gap-3" />
               </div>
             )}
-            <div className={hasLinks ? "mt-10 space-y-5 border-t border-line pt-8" : "space-y-5"}>
-              {profile.location && (
-                <p className="flex items-center gap-2.5 text-fg-muted">
-                  <MapPin className="size-4 text-accent" aria-hidden="true" />
-                  Based in {profile.location}
-                </p>
-              )}
-              <CvButton url={cvLink(profile)} name={profile.display_name} size="sm" />
-            </div>
+            {profile.location && (
+              <p className={`flex items-center gap-2.5 text-fg-muted ${hasLinks ? "mt-10 border-t border-line pt-8" : ""}`}>
+                <MapPin className="size-4 text-accent" aria-hidden="true" />
+                Based in {profile.location}
+              </p>
+            )}
           </Reveal>
 
           {email && (
