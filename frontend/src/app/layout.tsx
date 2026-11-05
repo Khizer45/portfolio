@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { site } from "@/data/site";
 import { getProfile } from "@/lib/content";
@@ -10,11 +10,6 @@ import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
@@ -84,7 +79,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-pattern={theme.pattern}
       data-cards={theme.cards}
       data-corners={theme.corners}
-      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${theme.mode === "dark" ? "dark" : ""} h-full antialiased`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${theme.mode === "dark" ? "dark" : ""} h-full antialiased`}
     >
       <head>
         {/* Theme colours (validated hex values and preset constants only; see lib/theme.ts). */}

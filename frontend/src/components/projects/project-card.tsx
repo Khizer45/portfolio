@@ -36,7 +36,7 @@ export function ProjectCard({
     >
       <div className="relative aspect-[2/1] overflow-hidden rounded-xl border border-line">
         {index !== undefined && (
-          <span className="absolute top-2.5 left-2.5 z-10 rounded-md border border-[var(--btn-border-secondary)] bg-surface px-1.5 py-0.5 font-mono text-[0.6875rem] font-semibold text-fg">
+          <span className="absolute top-2.5 left-2.5 z-10 rounded-full border border-line bg-surface/90 px-2 py-0.5 font-mono text-[0.6875rem] font-medium text-fg-muted backdrop-blur">
             P-{String(index + 1).padStart(2, "0")}
           </span>
         )}

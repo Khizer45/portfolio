@@ -19,7 +19,7 @@ export function StatusBadge({ label, tone, className, title }: { label: string; 
     <span
       title={title}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border border-line-strong bg-surface px-2 py-0.5 font-mono text-[0.6875rem] font-medium tracking-wide text-fg-muted uppercase",
+        "inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-0.5 font-mono text-[0.6875rem] font-medium tracking-wide text-fg-muted uppercase",
         className,
       )}
     >
@@ -34,7 +34,7 @@ export function Tag({ children, className }: { children: React.ReactNode; classN
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border border-line-strong bg-surface/70 px-2 py-0.5 font-mono text-[0.6875rem] leading-5 text-fg-muted",
+        "inline-flex items-center rounded-md border border-line bg-surface-muted/60 px-2 py-0.5 text-xs leading-5 font-medium text-fg-muted",
         className,
       )}
     >

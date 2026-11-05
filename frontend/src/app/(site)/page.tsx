@@ -5,11 +5,11 @@ import { isWhatsApp } from "@/components/layout/site-footer";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { ProjectGrid } from "@/components/projects/project-card";
 import { ArrowLink } from "@/components/ui/arrow-link";
-import { Tag } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { Container } from "@/components/ui/container";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Marquee } from "@/components/ui/marquee";
 import { SectionHeading } from "@/components/ui/page-header";
 import { Reveal } from "@/components/ui/reveal";
 import {
@@ -53,10 +53,7 @@ export default async function HomePage() {
   const technologyUse = new Map<string, number>();
   for (const tech of projects.flatMap((p) => p.technologies)) technologyUse.set(tech, (technologyUse.get(tech) ?? 0) + 1);
   // Ordered by how many published projects use each technology; ties keep project order.
-  const topTechnologies = [...technologyUse.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([tech]) => tech);
+  const technologies = [...technologyUse.entries()].sort((a, b) => b[1] - a[1]).map(([tech]) => tech);
   const whatsapp = profile.social_links.find((link) => isWhatsApp(link.url));
   const details = [
     { icon: BriefcaseBusiness, text: profile.work_preference },
@@ -72,6 +69,10 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section aria-labelledby="hero-heading" className="relative overflow-hidden border-b border-line">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="hero-glow -top-48 -left-40 size-[36rem] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)]" />
+          <div className="hero-glow top-0 -right-48 size-[32rem] bg-[color-mix(in_srgb,var(--accent)_7%,transparent)] [animation-delay:-10s]" />
+        </div>
         <Container className="relative grid grid-cols-1 gap-10 pt-10 pb-14 sm:gap-12 sm:pt-20 sm:pb-24 lg:grid-cols-12 lg:gap-10 lg:pt-24">
           <div className="lg:col-span-7">
             {profile.profile_image_url && (
@@ -98,7 +99,7 @@ export default async function HomePage() {
                 {roles.map((role) => (
                   <li
                     key={role}
-                    className="rounded-md border border-accent-line bg-accent-soft px-2 py-1 whitespace-nowrap sm:px-2.5"
+                    className="rounded-full border border-accent-line bg-accent-soft px-2.5 py-1 whitespace-nowrap sm:px-3"
                   >
                     {role}
                   </li>
@@ -128,18 +129,6 @@ export default async function HomePage() {
                 <ArrowRight aria-hidden="true" className="group-hover/button:translate-x-0.5" />
               </ButtonLink>
             </div>
-            {topTechnologies.length > 0 && (
-              <div className="animate-enter mt-9 sm:mt-10" style={delay(300)}>
-                <p className={tileLabelClasses}>Most used in my projects</p>
-                <ul className="mt-3 flex flex-wrap gap-2" aria-label="Most used technologies">
-                  {topTechnologies.map((tech) => (
-                    <li key={tech}>
-                      <Tag>{tech}</Tag>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
 
           <aside aria-label="Availability" className="grid grid-cols-1 gap-3 lg:col-span-5 lg:self-center">
@@ -247,6 +236,13 @@ export default async function HomePage() {
           </aside>
         </Container>
       </section>
+
+      {/* Technologies used across the published projects */}
+      {technologies.length > 0 && (
+        <section aria-labelledby="technologies-heading" className="border-b border-line py-10 sm:py-12">
+          <Marquee id="technologies-heading" title="Technologies across my projects" items={technologies} />
+        </section>
+      )}
 
       {/* Featured projects */}
       <section aria-labelledby="projects-heading" className="py-20 sm:py-28">

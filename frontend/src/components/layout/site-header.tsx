@@ -7,9 +7,11 @@ import { initials } from "@/lib/format";
 
 export function SiteHeader({ name, items }: { name: string; items: readonly NavItem[] }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-line">
+    <header className="header-elevate sticky top-0 z-50 border-b border-line">
       {/* Blur lives on its own layer: backdrop-filter on the header would trap the fixed mobile menu inside it. */}
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-bg/80 backdrop-blur-md" />
+      {/* Reading progress (CSS scroll-driven animation; see globals.css). */}
+      <div aria-hidden="true" className="scroll-progress absolute inset-x-0 -bottom-px h-0.5 bg-accent" />
       <Container className="flex h-16 items-center justify-between gap-4">
         <Link href="/" className="group flex items-center gap-2.5 rounded-md">
           <span

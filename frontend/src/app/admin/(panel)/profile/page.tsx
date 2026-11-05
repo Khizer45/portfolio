@@ -127,7 +127,7 @@ const SECTIONS: FormSection[] = [
         required: true,
         defaultValue: "offset",
         options: [
-          { value: "offset", label: "Outlined, with offset shadow" },
+          { value: "offset", label: "Outlined" },
           { value: "soft", label: "Soft shadow" },
           { value: "flat", label: "Flat" },
         ],

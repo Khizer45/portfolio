@@ -14,6 +14,10 @@ export function PageHeader({
 }) {
   return (
     <header className="relative overflow-hidden border-b border-line">
+      <div
+        aria-hidden="true"
+        className="hero-glow -top-56 -left-40 size-[30rem] bg-[color-mix(in_srgb,var(--accent)_11%,transparent)]"
+      />
       <Container className="relative pt-16 pb-12 sm:pt-24 sm:pb-16">
         {eyebrow && (
           <Eyebrow className="animate-enter mb-4">{eyebrow}</Eyebrow>
