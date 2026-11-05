@@ -121,13 +121,11 @@ export function SiteFooter({ profile, items }: { profile: Profile; items: readon
         )}
       </Container>
       <Container>
-        <div className="flex items-center justify-between gap-4 border-t border-footer-line py-6 text-xs text-footer-muted">
+        {/* No link to the admin: it is reached only by its URL. */}
+        <div className="border-t border-footer-line py-6 text-xs text-footer-muted">
           <p>
             © {year} {profile.display_name}
           </p>
-          <Link href="/admin" className="transition-colors hover:text-footer-fg">
-            Admin
-          </Link>
         </div>
       </Container>
     </footer>

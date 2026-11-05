@@ -84,6 +84,24 @@ test.describe("footer", () => {
   });
 });
 
+test.describe("admin stays out of sight", () => {
+  test("no public page or robots.txt points to the admin, and admin pages are noindex", async ({ page, request }) => {
+    for (const path of ["/", "/projects", "/about", "/contact", "/does-not-exist"]) {
+      await page.goto(path);
+      await expect(page.locator('a[href^="/admin"]')).toHaveCount(0);
+      await expect(page.getByRole("link", { name: /admin/i })).toHaveCount(0);
+    }
+    const robots = await (await request.get("/robots.txt")).text();
+    expect(robots).not.toContain("admin");
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect(sitemap).not.toContain("/admin");
+    // Opening the URL directly still works, and tells search engines not to index it.
+    const login = await request.get("/admin/login");
+    expect(login.status()).toBe(200);
+    expect(login.headers()["x-robots-tag"]).toBe("noindex, nofollow");
+  });
+});
+
 test.describe("navigation", () => {
   const pages = [
     { link: "Projects", path: "/projects", heading: "Things I've built and am building" },
