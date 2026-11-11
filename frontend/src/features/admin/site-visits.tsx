@@ -26,8 +26,13 @@ export function SiteVisits() {
             Site visits
           </h2>
           <p className="mt-0.5 text-xs text-fg-subtle">
-            No cookies and nothing that identifies a visitor. Each person counts once per day; bots, your own
-            visits while signed in, and visitors who turn on Do Not Track are left out.
+            No cookies and nothing that identifies a visitor. Each person counts once per day; bots and visitors
+            who turn on Do Not Track are left out.
+          </p>
+          <p className="mt-1.5 text-xs text-fg-muted">
+            <strong className="font-medium text-fg">Your own visits aren&apos;t counted</strong> from any browser
+            where you&apos;re signed in to this admin. To test, open the site in a private (incognito) window or on
+            another device, then refresh this page.
           </p>
         </div>
         <div role="group" aria-label="Period" className="flex rounded-lg border border-line bg-surface p-0.5 text-sm">

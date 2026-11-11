@@ -63,14 +63,16 @@ def referrer_host(referrer: str | None, own_host: str) -> str | None:
     return host[:255]
 
 
-def record_view(db: Session, request: Request, settings: Settings, path: str, referrer: str | None) -> bool:
-    """Store one page view. Returns False when it was ignored (bot, admin page, repeat)."""
+def record_view(db: Session, request: Request, settings: Settings, path: str, referrer: str | None) -> str | None:
+    """Store one page view. Returns None when it was counted, otherwise why it wasn't."""
     user_agent = request.headers.get("user-agent", "")
-    if not user_agent or _BOT.search(user_agent) or path.startswith(_EXCLUDED_PATHS):
-        return False
+    if not user_agent or _BOT.search(user_agent):
+        return "automated client"
+    if path.startswith(_EXCLUDED_PATHS):
+        return "admin or API page"
     # The site owner browsing while signed in to the admin isn't a visitor.
     if request.cookies.get(settings.session_cookie_name):
-        return False
+        return "signed in to the admin"
     visitor = visitor_id(request, settings)
     now = datetime.now(UTC)
     recent = db.scalar(
@@ -79,17 +81,17 @@ def record_view(db: Session, request: Request, settings: Settings, path: str, re
         .limit(1)
     )
     if recent is not None:
-        return False
+        return "already counted in the last 30 minutes"
     today_count = db.scalar(
         select(func.count())
         .select_from(PageView)
         .where(PageView.visitor == visitor, PageView.created_at > now - timedelta(days=1))
     )
     if (today_count or 0) >= MAX_VIEWS_PER_VISITOR_PER_DAY:
-        return False
+        return "daily limit for this visitor"
     own_host = request.headers.get("x-forwarded-host") or request.headers.get("host", "")
     origin_host = urlsplit(request.headers.get("origin", "")).hostname or ""
     host = referrer_host(referrer, origin_host or own_host)
     db.add(PageView(path=path, referrer_host=host, visitor=visitor, device=device_type(user_agent)))
     db.commit()
-    return True
+    return None

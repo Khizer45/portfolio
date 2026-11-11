@@ -13,6 +13,12 @@ class PageViewIn(Schema):
     referrer: Annotated[str | None, StringConstraints(max_length=2048)] = None
 
 
+class PageViewResult(ReadSchema):
+    counted: bool
+    # Why a view wasn't counted, e.g. "signed in to the admin" (helps when checking the stats).
+    reason: str | None = None
+
+
 class DailyVisits(ReadSchema):
     date: date
     views: int

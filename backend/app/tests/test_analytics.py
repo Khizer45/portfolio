@@ -14,7 +14,8 @@ def _view(client, path="/", referrer=None, headers=BROWSER):
 
 
 def test_page_views_are_recorded_without_personal_data(client, db):
-    assert _view(client, "/projects", "https://www.linkedin.com/feed/?trk=abc").status_code == 204
+    response = _view(client, "/projects", "https://www.linkedin.com/feed/?trk=abc")
+    assert response.json() == {"counted": True, "reason": None}
     view = db.scalar(select(PageView))
     assert view.path == "/projects"
     assert view.referrer_host == "linkedin.com"  # only the site, never the full address
@@ -24,7 +25,8 @@ def test_page_views_are_recorded_without_personal_data(client, db):
 
 def test_repeats_bots_and_admin_pages_are_not_counted(client, db):
     _view(client, "/about")
-    _view(client, "/about")  # same visitor, same page, within 30 minutes
+    repeat = _view(client, "/about")  # same visitor, same page, within 30 minutes
+    assert repeat.json() == {"counted": False, "reason": "already counted in the last 30 minutes"}
     _view(client, "/admin/login")
     _view(client, "/api/v1/profile")
     _view(client, "/", headers={"User-Agent": "Googlebot/2.1 (+http://www.google.com/bot.html)"})
@@ -34,7 +36,7 @@ def test_repeats_bots_and_admin_pages_are_not_counted(client, db):
 
 
 def test_the_signed_in_admin_is_not_counted(admin, db):
-    _view(admin.client, "/")
+    assert _view(admin.client, "/").json() == {"counted": False, "reason": "signed in to the admin"}
     assert db.scalar(select(PageView)) is None
 
 
