@@ -2,12 +2,13 @@
 
 import hashlib
 import uuid
+from datetime import UTC, datetime, time, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Request, Response, status
 from sqlalchemy import func, select
 
-from app.api.deps import Admin, DbSession, PageNumber
+from app.api.deps import Admin, AppSettings, DbSession, PageNumber
 from app.core.errors import ConflictError, FieldValidationError, NotFoundError
 from app.models import (
     Achievement,
@@ -16,6 +17,7 @@ from app.models import (
     Certification,
     Education,
     Experience,
+    PageView,
     ProfileSettings,
     Project,
     ProjectTechnology,
@@ -24,10 +26,11 @@ from app.models import (
 )
 from app.repositories.base import commit, get_or_404, paginate
 from app.schemas.admin import AuditLogRead, DashboardStats
+from app.schemas.analytics import CountItem, DailyVisits, SiteAnalytics
 from app.schemas.common import Page
 from app.schemas.profile import ProfileRead, ProfileWrite
 from app.schemas.project import TechnologyRead, TechnologyUpdate
-from app.services import audit
+from app.services import analytics, audit
 from app.services.projects import delete_unused_technologies
 from app.services.slugs import technology_slug
 
@@ -70,6 +73,52 @@ def dashboard_stats(ctx: Admin, db: DbSession):
         articles_published=count(Article, Article.status == "published"),
         articles_draft=count(Article, Article.status == "draft"),
         recent_changes=[_audit_read(e) for e in recent],
+    )
+
+
+@router.get("/analytics", response_model=SiteAnalytics, tags=["admin: dashboard"])
+def site_analytics(ctx: Admin, db: DbSession, settings: AppSettings, days: Annotated[int, Query(ge=7, le=365)] = 30):
+    """Page views and daily unique visitors for the last `days` days (in the site's time zone)."""
+    offset = timedelta(hours=settings.analytics_utc_offset_hours)
+    today = analytics.local_today(settings)
+    first_day = today - timedelta(days=days - 1)
+    since = datetime.combine(first_day, time.min, tzinfo=UTC) - offset
+    local_day = func.date(func.timezone("UTC", PageView.created_at) + offset)
+    in_period = PageView.created_at >= since
+
+    rows = db.execute(
+        select(local_day, func.count(), func.count(func.distinct(PageView.visitor)))
+        .where(in_period)
+        .group_by(local_day)
+    ).all()
+    by_day = {day: (views, visitors) for day, views, visitors in rows}
+    daily = [
+        DailyVisits(date=day, views=by_day.get(day, (0, 0))[0], visitors=by_day.get(day, (0, 0))[1])
+        for day in (first_day + timedelta(days=i) for i in range(days))
+    ]
+
+    def top(column, *where, limit: int = 10) -> list[CountItem]:
+        counts = db.execute(
+            select(column, func.count())
+            .where(in_period, *where)
+            .group_by(column)
+            .order_by(func.count().desc(), column)
+            .limit(limit)
+        ).all()
+        return [CountItem(label=label, count=count) for label, count in counts]
+
+    return SiteAnalytics(
+        days=days,
+        views_today=daily[-1].views,
+        visitors_today=daily[-1].visitors,
+        views=sum(d.views for d in daily),
+        # The visitor hash changes daily, so this counts each person once per day they visited.
+        visitors=sum(d.visitors for d in daily),
+        views_all_time=db.scalar(select(func.count()).select_from(PageView)) or 0,
+        daily=daily,
+        top_pages=top(PageView.path),
+        top_referrers=top(PageView.referrer_host, PageView.referrer_host.is_not(None)),
+        devices=top(PageView.device, limit=3),
     )
 
 

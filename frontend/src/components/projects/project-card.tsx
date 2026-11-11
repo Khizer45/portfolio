@@ -30,7 +30,7 @@ export function ProjectCard({
   return (
     <article
       className={cn(
-        "card card-hover group relative flex min-w-0 flex-col rounded-2xl p-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-accent",
+        "card card-hover spotlight group relative flex min-w-0 flex-col rounded-2xl p-3 has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-accent",
         className,
       )}
     >

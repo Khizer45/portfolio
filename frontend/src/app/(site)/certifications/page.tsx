@@ -38,7 +38,7 @@ export default async function CertificationsPage() {
           {certifications.length > 0 ? (
             <ul className="grid grid-cols-1 gap-5 md:grid-cols-2">
               {certifications.map((cert) => (
-                <li key={cert.id} className="flex flex-col card rounded-2xl p-6">
+                <li key={cert.id} className="card spotlight flex flex-col rounded-2xl p-6">
                   <div className="flex items-start gap-4">
                     <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-accent-line bg-accent-soft text-accent">
                       <BadgeCheck className="size-5" aria-hidden="true" strokeWidth={1.75} />

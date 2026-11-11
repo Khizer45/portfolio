@@ -16,6 +16,7 @@
   --tone-blue: #2f5bd0;
   --shadow-card: 0 1px 2px rgb(16 16 24 / 0.04), 0 12px 32px -18px rgb(16 16 24 / 0.18);
   --shadow-card-hover: 0 1px 2px rgb(16 16 24 / 0.05), 0 18px 40px -18px rgb(16 16 24 / 0.26);
+  --card-inset: inset 0 1px 0 0 rgb(255 255 255 / 0.6);
   color-scheme: light;
 }
 
@@ -27,6 +28,7 @@
   --tone-blue: #7d95ff;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.35), 0 16px 40px -24px rgb(0 0 0 / 0.8);
   --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 0.4), 0 20px 44px -22px rgb(0 0 0 / 0.9);
+  --card-inset: inset 0 1px 0 0 rgb(255 255 255 / 0.05);
   color-scheme: dark;
 }
 
@@ -70,8 +72,9 @@ html[data-cards="flat"] {
   --card-border: var(--line);
   --card-border-hover: var(--line-strong);
   --card-border-width: 1px;
-  --card-shadow: none;
-  --card-shadow-hover: none;
+  /* Not "none": these are combined with --card-inset in one box-shadow list. */
+  --card-shadow: 0 0 #0000;
+  --card-shadow-hover: 0 0 #0000;
   --lift: 0px;
   --btn-border: transparent;
   --btn-border-secondary: var(--line-strong);
@@ -198,9 +201,36 @@ html[data-corners="sharp"] {
 
 /* A content box: surface background with the theme's border and shadow. Pair with rounded-*. */
 @utility card {
+  /* A faint top-to-bottom fade and a light inner top edge make boxes sit on the page like
+     paper on paper, instead of flat cut-outs. */
   background-color: var(--surface);
+  background-image: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface) 94%, var(--bg)));
   border: var(--card-border-width) solid var(--card-border);
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--card-inset), var(--card-shadow);
+}
+
+/* A soft light that follows the pointer across a card (position fed by SpotlightTracker). */
+@utility spotlight {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    background: radial-gradient(
+      380px circle at var(--mx, 50%) var(--my, 0%),
+      color-mix(in srgb, var(--accent) 9%, transparent),
+      transparent 60%
+    );
+  }
+  &:hover::before {
+    opacity: 1;
+  }
 }
 
 /* Lifts a card on hover (the offset shadow grows as it moves). */
@@ -212,7 +242,7 @@ html[data-corners="sharp"] {
   &:hover {
     transform: translateY(var(--lift));
     border-color: var(--card-border-hover);
-    box-shadow: var(--card-shadow-hover);
+    box-shadow: var(--card-inset), var(--card-shadow-hover);
   }
 }
 
@@ -293,6 +323,18 @@ html[data-corners="sharp"] {
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
     filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--delay, 0ms);
+}
+
+/* Children of a revealed block arrive one after another (set --i on each child). */
+.motion-ok [data-reveal="pending"] .stagger > * {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.stagger > * {
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--delay, 0ms) + 150ms + var(--i, 0) * 70ms);
 }
 
 /* Infinite horizontal strip (home page technologies). The list is rendered twice and the

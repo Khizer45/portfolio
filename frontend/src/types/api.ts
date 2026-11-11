@@ -336,5 +336,30 @@ export interface DashboardStats {
   recent_changes: AuditEntry[];
 }
 
+export interface DailyVisits {
+  date: string;
+  views: number;
+  visitors: number;
+}
+
+export interface CountItem {
+  label: string;
+  count: number;
+}
+
+/** Site visits for the admin dashboard. Visitors are counted once per day, without cookies. */
+export interface SiteAnalytics {
+  days: number;
+  views_today: number;
+  visitors_today: number;
+  views: number;
+  visitors: number;
+  views_all_time: number;
+  daily: DailyVisits[];
+  top_pages: CountItem[];
+  top_referrers: CountItem[];
+  devices: CountItem[];
+}
+
 /** Any admin record: an object with an id plus resource-specific fields. */
 export type AdminRecord = { id: string } & Record<string, unknown>;

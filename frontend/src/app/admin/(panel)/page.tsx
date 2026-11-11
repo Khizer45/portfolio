@@ -6,6 +6,7 @@ import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
 import { errorMessage } from "@/features/admin/api";
 import { useAuth } from "@/features/admin/auth";
+import { SiteVisits } from "@/features/admin/site-visits";
 import { useApiData } from "@/features/admin/use-api";
 import { AdminPageHeader, Card, ErrorState, Skeleton, describeChange, formatTimestamp } from "@/features/admin/ui";
 import type { DashboardStats } from "@/types/api";
@@ -55,6 +56,8 @@ export default function DashboardPage() {
         <Skeleton rows={4} />
       ) : (
         <div className="space-y-8">
+          <SiteVisits />
+
           <section aria-labelledby="totals">
             <h2 id="totals" className="sr-only">
               Totals

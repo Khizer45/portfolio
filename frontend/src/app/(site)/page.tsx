@@ -27,7 +27,7 @@ export const revalidate = 300;
 
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as React.CSSProperties;
 
-const tileClasses = "card rounded-2xl p-5";
+const tileClasses = "card spotlight rounded-2xl p-5";
 const tileLabelClasses = "flex items-center gap-1.5 font-mono text-[0.6875rem] tracking-[0.1em] text-fg-subtle uppercase";
 
 export default async function HomePage() {
@@ -108,7 +108,7 @@ export default async function HomePage() {
             )}
             <h1
               id="hero-heading"
-              className="mt-5 text-5xl leading-[0.95] font-semibold tracking-[-0.04em] sm:text-7xl lg:text-[5.25rem]"
+              className="mt-5 bg-linear-to-br from-fg from-50% to-[color-mix(in_srgb,var(--accent)_70%,var(--fg))] bg-clip-text pb-1 text-5xl leading-[0.95] font-semibold tracking-[-0.04em] text-transparent sm:text-7xl lg:text-[5.25rem]"
             >
               {profile.display_name}
             </h1>
@@ -133,7 +133,7 @@ export default async function HomePage() {
 
           <aside aria-label="Availability" className="grid grid-cols-1 gap-3 lg:col-span-5 lg:self-center">
             {/* Open-to-work card: everything in it is set in Admin → Profile → Availability. */}
-            <div className="animate-enter relative overflow-hidden card rounded-2xl p-6 sm:p-7" style={delay(160)}>
+            <div className="animate-enter card spotlight overflow-hidden rounded-2xl p-6 sm:p-7" style={delay(160)}>
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 bg-linear-to-br from-accent-soft via-transparent to-transparent"
@@ -286,11 +286,15 @@ export default async function HomePage() {
             <div className="card overflow-hidden rounded-2xl">
               <ul className="grid grid-cols-1 gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
                 {skillGroups.map((group, index) => (
-                  <Reveal as="li" key={group.slug} delay={(index % 3) * 50} className="bg-surface p-6">
+                  <Reveal as="li" key={group.slug} delay={(index % 3) * 50} className="spotlight bg-surface p-6">
                     <h3 className="font-mono text-xs tracking-[0.1em] text-fg-subtle uppercase">{group.title}</h3>
-                    <ul className="mt-4 space-y-2">
-                      {group.skills.map((skill) => (
-                        <li key={skill.name} className="flex items-center gap-2.5 text-[0.9375rem] text-fg">
+                    <ul className="stagger mt-4 space-y-2">
+                      {group.skills.map((skill, i) => (
+                        <li
+                          key={skill.name}
+                          style={{ "--i": i } as React.CSSProperties}
+                          className="flex items-center gap-2.5 text-[0.9375rem] text-fg"
+                        >
                           <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-accent" />
                           {skill.name}
                         </li>
@@ -364,7 +368,7 @@ export default async function HomePage() {
                   as="li"
                   key={cert.id}
                   delay={index * 60}
-                  className="card card-hover flex items-start gap-4 rounded-2xl p-5"
+                  className="card card-hover spotlight flex items-start gap-4 rounded-2xl p-5"
                 >
                   <BadgeCheck className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden="true" strokeWidth={1.75} />
                   <div className="min-w-0">

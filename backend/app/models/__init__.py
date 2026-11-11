@@ -1,5 +1,6 @@
 """All models, imported here so Alembic and the app see the complete metadata."""
 
+from app.models.analytics import PageView
 from app.models.article import Article
 from app.models.auth import AdminSession, AdminUser, AuditLog, LoginAttempt
 from app.models.career import Achievement, Certification, Education, Experience
@@ -17,6 +18,7 @@ __all__ = [
     "Education",
     "Experience",
     "LoginAttempt",
+    "PageView",
     "ProfileSettings",
     "Project",
     "ProjectCategory",

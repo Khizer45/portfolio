@@ -2,20 +2,22 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Path, Query, Response
+from fastapi import APIRouter, Path, Query, Request, Response, status
 from sqlalchemy import select
 
-from app.api.deps import DbSession, PageNumber
+from app.api.deps import AppSettings, DbSession, PageNumber, verify_origin
 from app.core.errors import NotFoundError
 from app.models import ProfileSettings
 from app.models.enums import ProjectStatus
 from app.repositories import public as repo
+from app.schemas.analytics import PageViewIn
 from app.schemas.article import PublicArticle, PublicArticleSummary
 from app.schemas.career import PublicAchievement, PublicCertification, PublicEducation, PublicExperience
 from app.schemas.common import Page
 from app.schemas.profile import ProfileRead
 from app.schemas.project import ProjectPublicDetail, ProjectPublicSummary, PublicCategory
 from app.schemas.skill import PublicSkillGroup
+from app.services import analytics
 
 router = APIRouter(tags=["public"])
 
@@ -41,6 +43,14 @@ def get_profile_photo(version: Annotated[str, Path(pattern="^[0-9a-f]{1,64}$")],
         media_type=row.photo_type,
         headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )
+
+
+@router.post("/views", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+def record_page_view(body: PageViewIn, request: Request, db: DbSession, settings: AppSettings):
+    """Count a visit to a public page (no cookies; nothing that identifies the visitor is stored)."""
+    verify_origin(request, settings)
+    analytics.record_view(db, request, settings, body.path, body.referrer)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/projects", response_model=Page[ProjectPublicSummary])

@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # TCP peer address). See get_client_ip in app/api/deps.py.
     trusted_proxy_count: int = Field(default=0, ge=0, le=5)
 
+    # Analytics --------------------------------------------------------------
+    # Days in the admin's visit stats start at midnight in this UTC offset (Pakistan: +5).
+    analytics_utc_offset_hours: int = Field(default=5, ge=-12, le=14)
+
     # Operations -------------------------------------------------------------
     docs_enabled: bool = True
     log_level: str = "INFO"
