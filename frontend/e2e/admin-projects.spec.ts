@@ -271,3 +271,37 @@ test("unpublishing a project removes it from the public site", async ({ page, co
   await expect(publicPage.getByRole("heading", { level: 1 })).toHaveText(String(category.title));
   await expect(publicPage.getByText(title)).toHaveCount(0);
 });
+
+test("import from GitHub lists repositories and imports the selected ones as drafts", async ({ page }) => {
+  // GitHub is mocked at the browser: this test checks the admin page, not GitHub itself.
+  const repos = [
+    { name: "local-ai-lab", description: "Benchmark models.", html_url: "https://github.com/Khizer45/local-ai-lab", homepage: null, language: "Python", topics: ["fastapi"], stars: 2, fork: false, archived: false, pushed_at: "2026-10-01T10:00:00Z", already_imported: false },
+    { name: "old-fork", description: null, html_url: "https://github.com/Khizer45/old-fork", homepage: null, language: null, topics: [], stars: 0, fork: true, archived: false, pushed_at: "2024-01-01T10:00:00Z", already_imported: false },
+    { name: "skyntri", description: "Skin health assistant.", html_url: "https://github.com/Khizer45/skyntri", homepage: null, language: "Python", topics: [], stars: 0, fork: false, archived: false, pushed_at: "2026-09-01T10:00:00Z", already_imported: true },
+  ];
+  await page.route("**/api/v1/admin/projects/github-repos?*", (route) => route.fulfill({ json: repos }));
+  let sent: Record<string, unknown> | null = null;
+  await page.route("**/api/v1/admin/projects/import-github", (route) => {
+    sent = route.request().postDataJSON();
+    return route.fulfill({ status: 201, json: { created: ["Local AI Lab"], skipped: [] } });
+  });
+
+  await page.goto("/admin/projects");
+  await page.getByRole("link", { name: "Import from GitHub" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Import from GitHub");
+  await page.getByRole("button", { name: "Show repositories" }).click();
+  await expect(page.getByRole("heading", { name: "3 public repositories" })).toBeVisible();
+
+  // Own, active, new repositories start ticked; forks don't; imported ones can't be picked.
+  await expect(page.getByRole("checkbox", { name: /local-ai-lab/ })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /old-fork/ })).not.toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /skyntri/ })).toBeDisabled();
+
+  await page.getByRole("button", { name: "Import 1 as drafts" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Choose a category" })).toBeVisible();
+  await page.getByRole("combobox", { name: "Category for the imported projects" }).selectOption({ index: 1 });
+  await page.getByRole("combobox", { name: "Status" }).selectOption("completed");
+  await page.getByRole("button", { name: "Import 1 as drafts" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Created 1 draft: Local AI Lab." })).toBeVisible();
+  expect(sent).toMatchObject({ username: "Khizer45", repos: ["local-ai-lab"], status: "completed" });
+});

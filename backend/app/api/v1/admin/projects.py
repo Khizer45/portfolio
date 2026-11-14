@@ -5,12 +5,21 @@ from fastapi import APIRouter, Query, Response, status
 from sqlalchemy import select
 
 from app.api.deps import Admin, DbSession, PageNumber
-from app.models import Project
+from app.models import Project, ProjectCategory
 from app.models.enums import ProjectStatus
 from app.repositories.base import apply_search, commit, flush, get_or_404, paginate, reorder
 from app.schemas.common import Message, Page, ReorderRequest
-from app.schemas.project import ProjectAdminListItem, ProjectAdminRead, ProjectFlagsUpdate, ProjectWrite
+from app.schemas.project import (
+    GithubImportRequest,
+    GithubImportResult,
+    GithubRepoRead,
+    ProjectAdminListItem,
+    ProjectAdminRead,
+    ProjectFlagsUpdate,
+    ProjectWrite,
+)
 from app.services import audit
+from app.services import github_import as github
 from app.services import projects as service
 
 router = APIRouter(prefix="/projects", tags=["admin: projects"])
@@ -51,6 +60,76 @@ def create_project(body: ProjectWrite, ctx: Admin, db: DbSession):
     commit(db)
     db.refresh(project)
     return service.to_admin_read(project)
+
+
+def _imported_urls(db) -> set[str]:
+    return {
+        url.lower().rstrip("/") for url in db.scalars(select(Project.github_url).where(Project.github_url.is_not(None)))
+    }
+
+
+@router.get("/github-repos", response_model=list[GithubRepoRead])
+def list_github_repos(ctx: Admin, db: DbSession, username: Annotated[str, Query(max_length=39)]):
+    """The user's public GitHub repositories, marking the ones already imported."""
+    imported = _imported_urls(db)
+    return [
+        GithubRepoRead(
+            name=repo.name,
+            description=repo.description,
+            html_url=repo.html_url,
+            homepage=repo.homepage,
+            language=repo.language,
+            topics=repo.topics,
+            stars=repo.stars,
+            fork=repo.fork,
+            archived=repo.archived,
+            pushed_at=repo.pushed_at,
+            already_imported=repo.html_url.lower().rstrip("/") in imported,
+        )
+        for repo in github.list_repos(username)
+    ]
+
+
+@router.post("/import-github", response_model=GithubImportResult, status_code=status.HTTP_201_CREATED)
+def import_github_repos(body: GithubImportRequest, ctx: Admin, db: DbSession):
+    """Create one draft project per chosen repository, from its GitHub details and README."""
+    get_or_404(db, ProjectCategory, body.category_id, "Project category")
+    wanted = {name.lower() for name in body.repos}
+    repos = [repo for repo in github.list_repos(body.username) if repo.name.lower() in wanted]
+    imported = _imported_urls(db)
+    created: list[str] = []
+    skipped = sorted(wanted - {repo.name.lower() for repo in repos})
+    for repo in repos:
+        if repo.html_url.lower().rstrip("/") in imported:
+            skipped.append(repo.name)
+            continue
+        summary = repo.description or github.readme_summary(repo.full_name)
+        homepage = repo.homepage if repo.homepage and repo.homepage.startswith(("https://", "http://")) else None
+        data = ProjectWrite(
+            title=github.project_title(repo.name)[:120],
+            summary=(summary or "Imported from GitHub. Add a short summary before publishing.")[:400],
+            category_id=body.category_id,
+            status=body.status,
+            start_date=repo.created_at[:7] or None,
+            technologies=github.technologies(repo),
+            github_url=repo.html_url,
+            demo_url=homepage,
+            is_published=False,
+        )
+        project = service.create_project(db, data)
+        flush(db)
+        audit.record(
+            db,
+            actor=ctx.user,
+            action="create",
+            entity_type="project",
+            entity_id=project.id,
+            label=f"{project.title} (from GitHub)",
+            ip=ctx.ip,
+        )
+        created.append(project.title)
+    commit(db)
+    return GithubImportResult(created=created, skipped=skipped)
 
 
 @router.post("/reorder", response_model=Message)

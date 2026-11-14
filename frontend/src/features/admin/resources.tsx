@@ -46,6 +46,8 @@ export type ResourceDef = {
   reorderable?: boolean;
   publicHref?: (item: AdminRecord) => string | null;
   filters?: Array<{ param: string; label: string; options: Option[] }>;
+  /** Extra buttons in the list page header, next to "New …". */
+  extraActions?: Array<{ href: string; label: string }>;
 };
 
 const opts = (record: Record<string, string>): Option[] =>
@@ -110,6 +112,7 @@ const projects: ResourceDef = {
   subtitleOf: (item) => (item.subtitle as string | null) ?? null,
   reorderable: true,
   publicHref: (item) => (item.is_published ? `/projects/${item.slug}` : null),
+  extraActions: [{ href: "/admin/projects/import", label: "Import from GitHub" }],
   filters: [
     { param: "published", label: "Publishing", options: [{ value: "true", label: "Published" }, { value: "false", label: "Drafts" }] },
     { param: "status", label: "Status", options: statusOptions },

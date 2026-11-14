@@ -146,9 +146,16 @@ export function ResourceList({ resource }: { resource: ResourceDef }) {
         title={resource.title}
         description={resource.description}
         actions={
-          <Link href={`/admin/${resource.key}/new`} className={buttonClasses({ size: "sm" })}>
-            <Plus aria-hidden="true" /> New {resource.singular}
-          </Link>
+          <>
+            {resource.extraActions?.map((action) => (
+              <Link key={action.href} href={action.href} className={buttonClasses({ variant: "secondary", size: "sm" })}>
+                {action.label}
+              </Link>
+            ))}
+            <Link href={`/admin/${resource.key}/new`} className={buttonClasses({ size: "sm" })}>
+              <Plus aria-hidden="true" /> New {resource.singular}
+            </Link>
+          </>
         }
       />
 

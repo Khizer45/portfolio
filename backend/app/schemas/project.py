@@ -301,3 +301,31 @@ class ProjectPublicDetail(ProjectPublicSummary):
     docs_url: str | None
     video_url: str | None
     related_articles: list[RelatedArticle] = []
+
+
+class GithubRepoRead(ReadSchema):
+    """A public repository offered for import in the admin."""
+
+    name: str
+    description: str | None
+    html_url: str
+    homepage: str | None
+    language: str | None
+    topics: list[str]
+    stars: int
+    fork: bool
+    archived: bool
+    pushed_at: str
+    already_imported: bool
+
+
+class GithubImportRequest(Schema):
+    username: text(39)
+    repos: Annotated[list[text(100)], Field(min_length=1, max_length=50)]
+    category_id: uuid.UUID
+    status: ProjectStatus = "in_progress"
+
+
+class GithubImportResult(ReadSchema):
+    created: list[str]
+    skipped: list[str]
